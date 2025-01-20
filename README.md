@@ -1,2 +1,10 @@
-# stuff-back
-A node application that serves as a back-end to the Stuff system.
+# Stuff Back-end 🐶
+
+Esse é o repositório que guarda o back-end do sistema de gerenciamento de ativos Stuff.
+
+
+
+## Stack utilizada
+
+**Back-end:** Node.js, Fastify
+
