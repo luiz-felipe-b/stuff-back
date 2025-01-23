@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { db } from './shared/database';
+import { db } from './shared/db/drizzle';
 
 async function main() {
     const app = Fastify();
