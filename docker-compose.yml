@@ -1,23 +1,16 @@
-version: '3.8'
+version: '3.7'
 
 services:
   postgres:
-    image: postgres:14
-    container_name: postgres-container
-    environment:
-      - POSTGRES_USER=luiz
-      - POSTGRES_PASSWORD=stuff123
-      - POSTGRES_DB=stuff
+    image: bitnami/postgresql:latest
     ports:
-      - "5432:5432"
+      - '5432:5432'
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=stuff
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend
+      - postgres-data:/bitnami/postgresql
 
 volumes:
-  postgres_data:
-
-networks:
-  backend:
-    driver: bridge
+  postgres-data:
