@@ -1,0 +1,25 @@
+import { relations } from "drizzle-orm";
+import { boolean, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { users } from "../../users/schemas/users-schema.ts";
+import { itemTemplates } from "../../items/schemas/items/items-templates-schema.ts";
+import { AnyType } from "../../../../../types/any-type.js";
+
+export const organizationTiers = pgEnum('organization_tiers', ['untiered', 'silver', 'gold', 'platinum']);
+
+const columns: AnyType<any> = {
+    id: text('id').primaryKey(),
+    author: text('author_id').references(() => users.id),
+    organizationCode: text('code').notNull(),
+    name: text('name').notNull(),
+    tier: organizationTiers().notNull(),
+    active: boolean('active').notNull().default(true),
+    creationDate: text('creation_date').notNull(),
+}
+
+export const organizations = pgTable('organizations', columns);
+
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+    author: one(users, { fields: [organizations.author], references: [users.id] }),
+    users: many(users),
+    items: many(itemTemplates),
+}))
