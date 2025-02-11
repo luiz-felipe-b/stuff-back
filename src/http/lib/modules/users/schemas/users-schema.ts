@@ -21,7 +21,7 @@ const columns: AnyType<User> = {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }
 
-export const users = pgTable('users', columns)
+export const users = pgTable('users', columns);
 
 export const usersRelations = relations(users, ({ one }) => ({
     organization: one(organizations, { fields: [users.organizationId], references: [organizations.id]})

@@ -1,4 +1,4 @@
-import { UserRepository } from "../../users/repositories/user-repository.js";
+import { UserRepository } from "../../users/repositories/users-repository.js";
 import { z } from "zod";
 import { verifyPassword } from "../../../util/hash-password.js";
 import app from "../../../../app.js";
