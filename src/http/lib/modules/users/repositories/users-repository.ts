@@ -1,4 +1,4 @@
-import { UserRepositoryInterface } from "./user-repository.interface";
+import { UserRepositoryInterface } from "./users-repository.interface";
 import { User } from "../models/user-model";
 import { db } from "../../../../../db/connection";
 import { users } from "../schemas/users-schema";

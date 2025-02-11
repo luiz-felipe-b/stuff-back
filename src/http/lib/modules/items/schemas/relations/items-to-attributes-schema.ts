@@ -1,12 +1,12 @@
 import { pgTable, text } from "drizzle-orm/pg-core";
-import { itemTemplates } from "../items/items-templates-schema";
-import { itemInstances } from "../items/items-instances-schema";
-import { attributes } from "../attributes/attributes-schema";
+import { itemTemplates } from "../items/items-templates-schema.ts";
+import { itemInstances } from "../items/items-instances-schema.ts";
+import { attributes } from "../attributes/attributes-schema.ts";
 import { relations } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export const itemsToAttributes = pgTable('items_to_attributes', {
-    id: text('id').$defaultFn(() => nanoid()).notNull(),
+    id: text('id').primaryKey().$defaultFn(() => nanoid()).notNull(),
     templateId: text('item_id').notNull().references(() => itemTemplates.id),
     instanceId: text('instance_id').notNull().references(() => itemInstances.id),
     attributeId: text('attribute_id').notNull().references(() => attributes.id),

@@ -1,3 +1,6 @@
+export * from './attributes/attributes-schema.ts';
+export * from './items/items-instances-schema.ts';
+export * from './items/items-templates-schema.ts';
 export * from './attributes/attribute-types/number-attributes-schema.ts';
 export * from './attributes/attribute-types/text-attributes-schema.ts';
 export * from './attributes/attribute-types/metric-attributes-schema.ts';
@@ -7,3 +10,4 @@ export * from './attributes/attribute-types/file-attributes-schema.ts';
 export * from './attributes/attribute-types/selection/selection-attributes-schema.ts';
 export * from './attributes/attribute-types/selection/selection-options-attributes-schema.ts';
 export * from './attributes/attribute-types/time-metric-attributes-schema.ts';
+export * from './relations/items-to-attributes-schema.ts';

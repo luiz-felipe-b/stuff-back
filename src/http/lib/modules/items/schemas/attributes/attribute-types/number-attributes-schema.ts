@@ -4,8 +4,8 @@ import { nanoid } from "nanoid";
 import { attributes } from "../attributes-schema.ts";
 
 const columns = {
-    id: text('id').$defaultFn(() => nanoid()).notNull(),
-    attributeId: text('attribute_id').notNull().references(() => attributes.id),
+    id: text('id').primaryKey().$defaultFn(() => nanoid()).notNull(),
+    attributeId: text('attribute_id').notNull().references(() => attributes.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     value: real('value').notNull(),
 }
 

@@ -1,10 +1,10 @@
-import { UserService } from '../services/user-service';
-import { UserRepository } from '../repositories/user-repository';
-import { hashPassword } from '../../../util/hash-password';
+import { UserService } from '../services/users-service';
+import { UserRepository } from '../repositories/users-repository';
+import { hashPassword } from '../../../util/hash-password.ts';
 import { nanoid } from 'nanoid';
 import { User } from '../models/user-model';
 
-jest.mock('../repositories/user-repository');
+jest.mock('../repositories/users-repository');
 jest.mock('../../../util/hash-password', () => ({ hashPassword: jest.fn() }));
 jest.mock("nanoid", () => ({ nanoid: jest.fn() }));
 
