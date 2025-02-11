@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { User } from "../models/user-model";
-import { UserService } from "../services/user-service";
+import { UserService } from "../services/users-service";
 import { Controller } from "../../../common/controllers/controller.js";
 
 export class UserController extends Controller {

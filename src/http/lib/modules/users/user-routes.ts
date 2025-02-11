@@ -1,6 +1,6 @@
-import { UserRepository } from "./repositories/user-repository.js";
+import { UserRepository } from "./repositories/users-repository.js";
 import { UserController } from "./controllers/user-controller.js";
-import { UserService } from "./services/user-service.js";
+import { UserService } from "./services/users-service.js";
 import { FastifyTypedInstance } from "../../../../types/fastify-typed-instance.js";
 
 export async function userRoutes(app: FastifyTypedInstance) {

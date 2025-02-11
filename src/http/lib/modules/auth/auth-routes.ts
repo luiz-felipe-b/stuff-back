@@ -1,4 +1,4 @@
-import { UserRepository } from "../users/repositories/user-repository.js";
+import { UserRepository } from "../users/repositories/users-repository.js";
 import { RefreshTokenRepository } from "./repositories/refresh-token-repository.js";
 import { AuthService } from "./services/auth-service.js";
 import { AuthController } from "./controllers/auth-controller.js";

@@ -4,8 +4,8 @@ import { attributes } from "../attributes-schema.ts";
 import { relations } from "drizzle-orm";
 
 const columns = {
-    id: text('id').$defaultFn(() => nanoid()).notNull(),
-    attributeId: text('attribute_id').notNull(),
+    id: text('id').primaryKey().$defaultFn(() => nanoid()).notNull(),
+    attributeId: text('attribute_id').notNull().references(() => attributes.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     value: text('value').notNull(),
 }
 

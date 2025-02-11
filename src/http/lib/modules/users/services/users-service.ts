@@ -1,9 +1,9 @@
 import { nanoid } from "nanoid";
-import { User } from "../models/user-model.js";
-import { UserRepository } from "../repositories/user-repository";
+import { User } from "../models/user-model.ts";
+import { UserRepository } from "../repositories/users-repository.ts";
 import { z } from "zod";
-import { hashPassword } from "../../../util/hash-password";
-import { HttpError } from "../../../util/errors/http-error";
+import { hashPassword } from "../../../util/hash-password.ts";
+import { HttpError } from "../../../util/errors/http-error.ts";
 import { FastifyRequest } from "fastify";
 
 export class UserService {
