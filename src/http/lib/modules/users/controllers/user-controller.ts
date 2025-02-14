@@ -11,7 +11,7 @@ export class UserController extends Controller {
         this.userService = userService;
     }
 
-    async getUserById(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<FastifyReply> {
+    async getUserById(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<Partial<User>> {
         return await this.handleRequest(req, reply, async () => {
             const user = await this.userService.getUserById(req);
             return reply.code(200).send(user);
@@ -25,14 +25,14 @@ export class UserController extends Controller {
         });
     }
 
-    async getAllUsers(req: FastifyRequest, reply: FastifyReply): Promise<User[]> {
+    async getAllUsers(req: FastifyRequest, reply: FastifyReply): Promise<Partial<User>[]> {
         return this.handleRequest(req, reply, async () => {
             const users = await this.userService.getAllUsers();
-            return reply.code(200).send(users);
+            return reply.code(200).send({ users });
         });
     }
 
-    async createUser(req: FastifyRequest< { Body: Pick<User, 'organizationId' | 'firstName' | 'lastName' | 'email' | 'password' | 'type'>} >, reply: FastifyReply): Promise<User> {
+    async createUser(req: FastifyRequest< { Body: Pick<User, 'firstName' | 'lastName' | 'email' | 'password'>} >, reply: FastifyReply): Promise<Partial<User>> {
         return this.handleRequest(req, reply, async () => {
             const user = await this.userService.createUser(req);
             return reply.code(201).send(user);
@@ -42,14 +42,14 @@ export class UserController extends Controller {
     async updateUser(req: FastifyRequest, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
             const user = await this.userService.updateUser(req);
-            return reply.code(200).send(user);
+            return reply.code(200).send({ message: "User was updated successfully", user });
         });
     }
 
     async deleteUser(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
             const user = await this.userService.deleteUser(req);
-            return reply.code(200).send(user);
+            return reply.code(200).send({ message: "User was removed successfully", user });
         });
     }
 }

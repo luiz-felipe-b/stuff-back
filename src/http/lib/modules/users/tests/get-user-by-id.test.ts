@@ -1,6 +1,7 @@
 import { UserService } from '../services/users-service';
 import { UserRepository } from '../repositories/users-repository';
 import { User } from '../models/user-model';
+import { HttpError } from '../../../util/errors/http-error';
 
 jest.mock('../repositories/users-repository');
 jest.mock("nanoid", () => ({ nanoid: jest.fn() }));
@@ -36,11 +37,10 @@ describe('getAllUsers', () => {
         expect(result).toEqual(user);
     });
 
-    it('should return null if id is not found', async () => {
+    it('should throw an error when user not found', async () => {
         userRepository.findById.mockResolvedValue(null);
 
-        const result = await userService.getUserById({ params: { id: 'nonexistentId' } } as any);
-
-        expect(result).toBeNull();
+        await expect(userService.getUserById({ params: { id: 'nonexistentId' } } as any))
+            .rejects.toThrow(new HttpError('User not found', 404));
     });
 });

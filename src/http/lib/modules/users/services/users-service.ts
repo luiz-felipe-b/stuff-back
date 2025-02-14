@@ -14,7 +14,7 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserById(req: FastifyRequest): Promise<User | null> {
+    async getUserById(req: FastifyRequest): Promise<Partial<User> | null> {
         const requestSchema = z.object({
             id: z.string(),
         });
@@ -24,7 +24,11 @@ export class UserService {
             throw new Error('Missing or invalid id');
         }
 
-        return this.userRepository.findById(validated.data.id);
+        const user = await this.userRepository.findById(validated.data.id);
+        if (!user) {
+            throw new HttpError('User not found', 404);
+        }
+        return user;
     }
 
     /**
@@ -32,7 +36,7 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserByEmail(req: FastifyRequest): Promise<User | null> {
+    async getUserByEmail(req: FastifyRequest): Promise<Partial<User> | null> {
         const requestSchema = z.object({
             email: z.string().email(),
         })
@@ -49,7 +53,7 @@ export class UserService {
      * Obtém todos os usuários
      * @returns Promise<User[]>
      */
-    async getAllUsers(): Promise<User[]> {
+    async getAllUsers(): Promise<Partial<User>[]> {
         return this.userRepository.findAll();
     }
 
@@ -58,14 +62,14 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User>
      */
-    async createUser(req: FastifyRequest): Promise<User> {
+    async createUser(req: FastifyRequest): Promise<Partial<User>> {
         const requestSchema = z.object({
-            organizationId: z.string().nullable(),
+            organizationId: z.string().nullable().default(null),
             firstName: z.string(),
             lastName: z.string(),
             email: z.string().email(),
             password: z.string(),
-            type: z.enum(["admin", "staff", "root", "invited"]),
+            type: z.enum(["admin", "staff", "root", "invited"]).default("invited"),
         });
         const validated = requestSchema.safeParse(req.body);
         if (!validated.success) {
@@ -74,7 +78,7 @@ export class UserService {
 
         const userExists = await this.userRepository.findByEmail(validated.data.email);
         if (userExists) {
-            throw new Error('User already exists');
+            throw new HttpError('User already exists', 400);
         }
 
         const hashedPassword = await hashPassword(validated.data.password);
@@ -86,7 +90,7 @@ export class UserService {
             lastName: validated.data.lastName,
             email: validated.data.email,
             password: hashedPassword,
-            type: validated.data.type || 'invited',
+            type: validated.data.type,
         }
 
         return this.userRepository.create(newUser);
@@ -153,9 +157,14 @@ export class UserService {
 
         const validated = requestSchema.safeParse(req.params);
         if (!validated.success) {
-            throw new Error('Missing or invalid id');
+            throw new HttpError('Missing or invalid id', 401);
         }
 
-        return this.userRepository.delete(validated.data.id);
+        const user = await this.userRepository.delete(validated.data.id);
+        if (!user) {
+            throw new HttpError('User does not exist', 404)
+        }
+        
+        return user;
     }
 }

@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "tsx watch --env-file .env src/http/server.ts",
     "migrate": "npx drizzle-kit generate --name=init && npx drizzle-kit migrate",
+    "studio" : "npx drizzle-kit studio",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [],

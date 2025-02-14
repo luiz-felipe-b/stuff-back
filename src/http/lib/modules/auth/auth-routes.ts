@@ -29,12 +29,34 @@ export async function authRoutes(app: FastifyTypedInstance) {
         schema: {
             description: 'Logout from an account',
             tags: ['auth'],
-            body: z.object({
-                refreshToken: z.string(),
-            }),
+            security: [{ refreshToken: [] }],
             response: {
                 200: z.object({success: z.boolean()}),
             }
         }
     }, authController.logout.bind(authController));
+
+    app.post('/refresh', {
+        schema: {
+            description: 'Refresh the access token',
+            tags: ['auth'],
+            security: [{ refreshToken: [] }],
+            response: {
+                200: z.object({accessToken: z.string()}),
+            }
+        }
+    }, authController.refresh.bind(authController));
+
+
+    app.get('/protected', {
+        onRequest: [app.authenticate],
+        schema: {
+            description: 'Protected route',
+            tags: ['auth'],
+            security: [{ refreshToken: [], accessToken: [] }],
+        }
+    }, async (req, reply) => {
+        reply.status(200).send({message: 'If you see this, you are authenticated!'});
+    });
+
 }

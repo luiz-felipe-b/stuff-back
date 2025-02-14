@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { db } from './shared/db/drizzle';
+import { env } from './env';
 
 async function main() {
     const app = Fastify();
@@ -9,7 +10,7 @@ async function main() {
     });
 
     try {
-        await app.listen({ port: 3000 });
+        await app.listen({ port: Number(env.PORT) });
     } catch (err) {
         console.error(err);
         process.exit(1);

@@ -64,7 +64,6 @@ export class OrganizationsService {
             organizationCode: z.string(),
             name: z.string(),
             tier: z.nativeEnum(OrganizationTiers),
-            active: z.boolean(),
         });
 
         const validated = requestSchema.safeParse(req.body);
@@ -108,7 +107,7 @@ export class OrganizationsService {
         const validatedBody = bodySchema.safeParse(req.body);
         if (!validatedBody.success) {
             const issue = validatedBody.error.issues[0];
-            throw new HttpError(`The following data is invalid or missing: ${issue.path[0]} | ${issue.message}`, 400);
+            throw new HttpError(`The following data is invalid or missing: ${issue.path[0]}, here are the details: ${issue.message}`, 400);
         }
 
         // Atualiza os dados da organização filtrando os dados que não foram enviados
@@ -139,6 +138,11 @@ export class OrganizationsService {
         const validated = requestSchema.safeParse(req.params);
         if (!validated.success) {
             throw organizationErrors.MISSING_OR_INVALID_ID;
+        }
+
+        const organizationExists = await this.organizationsRepository.findById(validated.data.id);
+        if (!organizationExists) {
+            throw organizationErrors.ORGANIZATION_NOT_FOUND;
         }
 
         return this.organizationsRepository.delete(validated.data.id);

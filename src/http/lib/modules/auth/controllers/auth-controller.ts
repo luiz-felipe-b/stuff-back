@@ -39,4 +39,12 @@ export class AuthController extends Controller {
             return reply;
         });
     }
+
+    async refresh(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+        return this.handleRequest(req, reply, async () => {
+            const accessToken = await this.authService.refresh(req);
+            reply.status(200).send({ accessToken });
+            return reply;
+        });
+    }
 }
