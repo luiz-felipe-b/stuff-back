@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "typeRoots": [
+            "./node_modules/@types",
+            "./src/types"
+        ],
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+    },
+    "include": [
+        "src/db/schemas/*.ts"
+, "src/db/schemas/refresh-tokens.schema.ts", "src/db/schemas/index.ts"    ]
+}
