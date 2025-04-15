@@ -27,8 +27,22 @@ export async function appSetup(app: FastifyInstance) {
                 description: 'API documentation',
                 version: '0.1.0'
             },
+            tags: [
+                { name: 'user', description: 'User related end-points' },
+                { name: 'auth', description: 'Authentication related end-points' }
+            ],
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        bearerFormat: 'JWT',
+                    }
+                }
+            },
         },
-        transform: jsonSchemaTransform
+        transform: jsonSchemaTransform,
+
     })
 
     app.register(fastifySwaggerUi, {

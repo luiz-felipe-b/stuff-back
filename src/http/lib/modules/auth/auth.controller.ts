@@ -41,9 +41,9 @@ export class AuthController extends Controller {
         });
     }
 
-    async resetPassword(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    async resetPasswordOnForget(req: FastifyRequest, reply: FastifyReply): Promise<void> {
         return this.handleRequest(req, reply, async () => {
-            await this.authService.resetPassword(req);
+            await this.authService.resetPasswordOnForget(req);
             reply.send({ success: true, message: 'Password reset successfully.' });
             return reply;
         });

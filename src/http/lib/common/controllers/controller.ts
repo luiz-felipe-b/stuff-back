@@ -6,7 +6,7 @@ export class Controller {
         try {
             return await callback(req, reply);
         } catch (err) {
-            console.log(err, reply);
+            console.log(err)
             return this.handleHttpError(err, reply);
         }
     }

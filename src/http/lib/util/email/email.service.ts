@@ -23,6 +23,7 @@ interface EmailAttachment {
  * Options for sending an email
  */
 interface EmailOptions {
+    sender: EmailRecipient;
     to: EmailRecipient[];
     subject: string;
     htmlContent: string;
@@ -48,15 +49,10 @@ export class EmailService {
      * @param defaultSenderEmail - Default sender email address
      * @param defaultSenderName - Default sender name
      */
-    constructor(
-
-    ) {
+    constructor() {
         this.apiInstance = new brevo.TransactionalEmailsApi();
-
         this.apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, env.BREVO_API_KEY);
-
         this.sendSmtpEmail = new brevo.SendSmtpEmail();
-
     }
     
     /**
@@ -64,19 +60,14 @@ export class EmailService {
      * @param options - Email options
      * @returns Promise resolving to true if email was sent successfully, false otherwise
      */
-    async sendEmail(): Promise<boolean> {
+    async sendEmail(options: EmailOptions): Promise<boolean> {
         try {
             const sendSmtpEmail = new brevo.SendSmtpEmail();
 
-            sendSmtpEmail.subject = "My {{params.subject}}";
-            sendSmtpEmail.htmlContent = "<html><body><h1>Common: This is my first transactional email {{params.parameter}}</h1></body></html>";
-            sendSmtpEmail.sender = { "name": "John", "email": "lfbalaminute@hotmail.com" };
-            sendSmtpEmail.to = [
-              { "email": "lfbalaminute@hotmail.com", "name": "Luiz Felipe" }
-            ];
-            sendSmtpEmail.replyTo = { "email": "lfbalaminute@hotmail.com", "name": "Luiz Felipe" };
-            sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-1234" };
-            sendSmtpEmail.params = { "parameter": "My param value", "subject": "common subject" };
+            sendSmtpEmail.subject = options.subject;
+            sendSmtpEmail.htmlContent = options.htmlContent;
+            sendSmtpEmail.sender = options.sender;
+            sendSmtpEmail.to = options.to;
 
             const data = await this.apiInstance.sendTransacEmail(sendSmtpEmail);
             console.log('API called successfully. Returned data: ' + JSON.stringify(data));

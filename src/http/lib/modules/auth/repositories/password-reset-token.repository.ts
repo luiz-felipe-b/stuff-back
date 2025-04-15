@@ -5,12 +5,13 @@ import { eq, and } from "drizzle-orm";
 
 export class PasswordResetTokenRepository{
     async savePasswordResetToken(token: string, userId: string, expiresAt: Date): Promise<PasswordResetTokenSchema> {
+        console.log(token)
         const [result] = await db.insert(passwordResetTokens).values({ token, userId, expiresAt }).returning();
         return result;
     }
 
     async findPasswordResetToken(token: string): Promise<PasswordResetTokenSchema> {
-        const [result] = await db.select().from(passwordResetTokens).where(and(eq(passwordResetTokens.token, token), (eq(passwordResetTokens.revoked, false)))).limit(1);
+        const [result] = await db.select().from(passwordResetTokens).where(and(eq(passwordResetTokens.token, token))).limit(1);
         return result;
     }
 

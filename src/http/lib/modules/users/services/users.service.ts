@@ -86,7 +86,9 @@ export class UserService {
             password: hashedPassword,
             organizationId: null,
             role: "admin",
-            tier: "free"
+            tier: "free",
+            resetPasswordToken: null,
+            resetPasswordExpires: null
         }
 
         return this.userRepository.create(newUser);

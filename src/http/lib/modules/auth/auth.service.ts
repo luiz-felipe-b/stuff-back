@@ -1,6 +1,6 @@
 import { UserRepository } from "../users/repositories/users.repository.js";
 import { z } from "zod";
-import { verifyPassword } from "../../util/hash-password.js";
+import { hashPassword, verifyPassword } from "../../util/hash-password.js";
 import app from "../../../app.js";
 import { RefreshTokenRepository } from "./repositories/refresh-token-repository.js";
 import { HttpError } from "../../util/errors/http-error.js";
@@ -46,6 +46,8 @@ export class AuthService {
         tokenExpirationDate.setDate(tokenExpirationDate.getDate() + 7);
         // Salvar refresh token no banco de dados
         await this.refreshTokenRepository.saveRefreshToken(refreshToken, user.id, tokenExpirationDate);
+        // Alterar o usuário para logado
+        await this.userRepository.update({ id: user.id, authenticated: true });
 
         return { accessToken, refreshToken };
     }
@@ -69,6 +71,7 @@ export class AuthService {
         }
 
         await this.refreshTokenRepository.revokeRefreshToken(refreshToken);
+        await this.userRepository.update({ id: token.userId, authenticated: false });
     }
 
     async refreshToken(req: FastifyRequest): Promise<{ accessToken: string }> {
@@ -80,7 +83,21 @@ export class AuthService {
             throw new HttpError('Missing or invalid parameters', 400);
         }
 
+        const jwtSchema = z.object({
+            id: z.string(),
+        });
         const { refreshToken } = validation.data;
+        const refreshTokenValidation = jwtSchema.safeParse(app.jwt.verify(refreshToken));
+        if (!refreshTokenValidation.success) {
+            throw new HttpError('Invalid token', 401);
+        }
+        const { id } = refreshTokenValidation.data;
+
+        // Verificar se o usuário existe
+        const user = await this.userRepository.findById(id);
+        if (!user) {
+            throw new HttpError('User not found', 404);
+        }
 
         // Verificar se o token existe
         const token = await this.refreshTokenRepository.findRefreshToken(refreshToken);
@@ -116,32 +133,73 @@ export class AuthService {
         // Gerar token de redefinição de senha
         const resetToken = app.jwt.sign({ id: user.id }, { expiresIn: '1h' });
         
-        await this.emailService.sendEmail();
+        await this.emailService.sendEmail({
+            subject: '🔒 Password Reset Request',
+            htmlContent: `<p>Here's your password reset token ${resetToken}</p>`,
+            sender: { name: 'Support Team', email: 'lfbalaminute@hotmail.com' },
+            to: [{ email: email }],
+        });
 
         const expirationDate = new Date();
-        expirationDate.setHours(expirationDate.getHours() + 1); // Add 1 hour
-        // await this.passwordResetTokenRepository.savePasswordResetToken(user.id, resetToken, expirationDate);
+        expirationDate.setHours(expirationDate.getHours() + 1);
+        console.log(user.id)
+        await this.passwordResetTokenRepository.savePasswordResetToken(resetToken, user.id, expirationDate);
 
         return;
     }
 
-    async resetPassword(req: FastifyRequest): Promise<void> {
-        const requestSchema = z.object({
-            email: z.string().email(),
-            password: z.string(),
+
+    async resetPasswordOnForget(req: FastifyRequest): Promise<void> {
+        console.log(req.headers);
+        // Verificar se o token existe
+        const requestHeaderSchema = z.object({
+            authorization: z.string().regex(/^Bearer\s.+$/),
         });
-        const validation = requestSchema.safeParse(req.body);
-        if (!validation.success) {
+        const headerValidation = requestHeaderSchema.safeParse(req.headers);
+        if (!headerValidation.success) {
             throw new HttpError('Missing or invalid parameters', 400);
         }
+        const { authorization } = headerValidation.data;
+        const token = authorization.split(' ')[1];
 
-        const { email, password } = validation.data;
+        // Verificar se o token é válido
+        const jwtSchema = z.object({
+            id: z.string(),
+        });
+        console.log(app.jwt.verify(token));
+        const decodedTokenValidation = jwtSchema.safeParse(app.jwt.verify(token));
+        if (!decodedTokenValidation.success) {
+            throw new HttpError('Invalid token', 401);
+        }
+        console.log(token);
+        const checkToken = await this.passwordResetTokenRepository.findPasswordResetToken(token);
+        console.log(checkToken);
+        if (!checkToken || checkToken.revoked || checkToken.expiresAt < new Date()) {
+            throw new HttpError('Invalid token', 401);
+        }
+        const { id } = decodedTokenValidation.data;
 
         // Verificar se o usuário existe
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this.userRepository.findById(id);
         if (!user) {
             throw new HttpError('User not found', 404);
         }
+
+        // Verificar se a senha foi enviada
+        const requestBodySchema = z.object({
+            newPassword: z.string(),
+        });
+        const bodyValidation = requestBodySchema.safeParse(req.body);
+        if (!bodyValidation.success) {
+            throw new HttpError('Missing or invalid parameters', 400);
+        }
+        const { newPassword } = bodyValidation.data;
+
+        // Criar hash da nova senha
+        const password = await hashPassword(newPassword);
+
+        // Revogar o token
+        await this.passwordResetTokenRepository.revokePasswordResetToken(token);
 
         // Atualizar senha
         await this.userRepository.update({ id: user.id, password });
