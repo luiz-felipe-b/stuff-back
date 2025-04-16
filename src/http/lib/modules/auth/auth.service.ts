@@ -149,31 +149,26 @@ export class AuthService {
     }
 
 
-    async resetPasswordOnForget(req: FastifyRequest): Promise<void> {
-        console.log(req.headers);
+    async resetPassword(req: FastifyRequest): Promise<void> {
         // Verificar se o token existe
-        const requestHeaderSchema = z.object({
-            authorization: z.string().regex(/^Bearer\s.+$/),
+        const requestSchema = z.object({
+            token: z.string(),
+            newPassword: z.string(),
         });
-        const headerValidation = requestHeaderSchema.safeParse(req.headers);
-        if (!headerValidation.success) {
+        const validation = requestSchema.safeParse(req.headers);
+        if (!validation.success) {
             throw new HttpError('Missing or invalid parameters', 400);
         }
-        const { authorization } = headerValidation.data;
-        const token = authorization.split(' ')[1];
+        const { token, newPassword } = validation.data;
 
-        // Verificar se o token é válido
         const jwtSchema = z.object({
             id: z.string(),
         });
-        console.log(app.jwt.verify(token));
         const decodedTokenValidation = jwtSchema.safeParse(app.jwt.verify(token));
         if (!decodedTokenValidation.success) {
             throw new HttpError('Invalid token', 401);
         }
-        console.log(token);
         const checkToken = await this.passwordResetTokenRepository.findPasswordResetToken(token);
-        console.log(checkToken);
         if (!checkToken || checkToken.revoked || checkToken.expiresAt < new Date()) {
             throw new HttpError('Invalid token', 401);
         }
@@ -184,16 +179,6 @@ export class AuthService {
         if (!user) {
             throw new HttpError('User not found', 404);
         }
-
-        // Verificar se a senha foi enviada
-        const requestBodySchema = z.object({
-            newPassword: z.string(),
-        });
-        const bodyValidation = requestBodySchema.safeParse(req.body);
-        if (!bodyValidation.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
-        }
-        const { newPassword } = bodyValidation.data;
 
         // Criar hash da nova senha
         const password = await hashPassword(newPassword);

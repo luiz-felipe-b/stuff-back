@@ -70,17 +70,17 @@ export async function authRoutes(app: FastifyTypedInstance) {
     }, authController.forgotPassword.bind(authController));
 
 
-    app.post('/reset-password/forgot', {
+    app.post('/reset-password', {
         schema: {
             description: 'Reset password using a reset password token',
-            security: [{bearerAuth: []}],
             tags: ['auth'],
             body: z.object({
+                token: z.string(),
                 newPassword: z.string(),
             }),
             response: {
                 200: z.object({message: z.string(), success: z.boolean()}),
             }
         }
-    }, authController.resetPasswordOnForget.bind(authController));
+    }, authController.resetPassword.bind(authController));
 }

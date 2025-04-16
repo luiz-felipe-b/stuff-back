@@ -11,6 +11,6 @@ export async function userRoutes(app: FastifyTypedInstance) {
     app.get('/',userController.getAllUsers.bind(userController));
     app.get('/:id',userController.getUserById.bind(userController));
     app.post('/',userController.createUser.bind(userController));
-    app.put('/:id',userController.updateUser.bind(userController));
+    app.patch('/:id',userController.updateUser.bind(userController));
     app.delete('/:id',userController.deleteUser.bind(userController));
 }
