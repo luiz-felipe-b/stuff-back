@@ -5,6 +5,7 @@ import { fastifySwaggerUi } from "@fastify/swagger-ui";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { validatorCompiler, serializerCompiler, jsonSchemaTransform } from "fastify-type-provider-zod";
 import { env } from "../env";
+import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 
 export async function appSetup(app: FastifyInstance) {
     app.register(fastifyJwt, {
@@ -47,6 +48,13 @@ export async function appSetup(app: FastifyInstance) {
 
     app.register(fastifySwaggerUi, {
         routePrefix: env.SWAGGER_URL,
+        uiConfig: {
+            docExpansion: 'list',
+            deepLinking: false,
+        },
+        uiHooks: {
+            preHandler: swaggerAuth,
+        }
     })
 
     app.decorate('authenticate', async (req: FastifyRequest, reply: FastifyReply) => {
