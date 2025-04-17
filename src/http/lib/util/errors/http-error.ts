@@ -1,8 +1,12 @@
-export class HttpError extends Error {
-    public statusCode: number;
+import { ErrorResponse } from "../../../../types/http/responses";
 
-    constructor(message: string, statusCode: number) {
+export class HttpError extends Error implements ErrorResponse {
+    public statusCode: number;
+    public error: string;
+
+    constructor(message: string, statusCode: number, error: string | undefined = 'HttpError') {
         super(message);
         this.statusCode = statusCode;
+        this.error = error;
     }
 }

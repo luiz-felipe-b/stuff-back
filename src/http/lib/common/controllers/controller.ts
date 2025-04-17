@@ -13,7 +13,7 @@ export class Controller {
 
     private handleHttpError(error: Error, reply: FastifyReply): FastifyReply {
         if (error instanceof HttpError) {
-            return reply.code(error.statusCode).send({ message: error.message });
+            return reply.code(error.statusCode).send({ statusCode: error.statusCode, error: error.error, message: error.message });
         }
         return reply.code(500).send({ message: "Internal server error" });
 }}

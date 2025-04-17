@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { User } from "../user.schema.ts";
-import { UserService } from "../services/users.service.js";
-import { Controller } from "../../../common/controllers/controller.js";
+import { User } from "./user.schema.ts";
+import { UserService } from "./users.service.ts";
+import { Controller } from "../../common/controllers/controller.js";
 
 export class UserController extends Controller {
     private userService: UserService;
@@ -25,9 +25,17 @@ export class UserController extends Controller {
         });
     }
 
+    async getMe(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+        return this.handleRequest(req, reply, async () => {
+            const user = await this.userService.getUserByEmail(req);
+            return reply.code(200).send(user);
+        });
+    }
+
     async getAllUsers(req: FastifyRequest, reply: FastifyReply): Promise<User[]> {
         return this.handleRequest(req, reply, async () => {
             const users = await this.userService.getAllUsers();
+            console.log(users)
             return reply.code(200).send(users);
         });
     }
@@ -42,6 +50,20 @@ export class UserController extends Controller {
     async updateUser(req: FastifyRequest, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
             const user = await this.userService.updateUser(req);
+            return reply.code(200).send(user);
+        });
+    }
+
+    async updateMe(req: FastifyRequest, reply: FastifyReply): Promise<User> {
+        return this.handleRequest(req, reply, async () => {
+            const user = await this.userService.updateMe(req);
+            return reply.code(200).send(user);
+        });
+    }
+
+    async updateMePassword(req: FastifyRequest, reply: FastifyReply): Promise<User> {
+        return this.handleRequest(req, reply, async () => {
+            const user = await this.userService.updatePasswordMe(req);
             return reply.code(200).send(user);
         });
     }

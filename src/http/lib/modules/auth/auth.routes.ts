@@ -6,6 +6,7 @@ import { FastifyTypedInstance } from "../../../../types/fastify-typed-instance.j
 import { z } from "zod";
 import { PasswordResetTokenRepository } from "./repositories/password-reset-token.repository.js";
 import { EmailService } from "../../util/email/email.service.js";
+import { authRouteDocs } from "./docs/auth.doc.js";
 
 export async function authRoutes(app: FastifyTypedInstance) {
     const refreshTokenRepository = new RefreshTokenRepository();
@@ -16,71 +17,22 @@ export async function authRoutes(app: FastifyTypedInstance) {
     const authController = new AuthController(authService);
 
     app.post('/login', {
-        schema: {
-            description: 'Login with an account',
-            tags: ['auth'],
-            body: z.object({
-                email: z.string().email(),
-                password: z.string(),
-            }),
-            response: {
-                200: z.object({accessToken: z.string()}),
-            }
-        }
+        schema: authRouteDocs.login
     }, authController.login.bind(authController));
 
     app.post('/logout', {
-        schema: {
-            description: 'Logout from an account',
-            tags: ['auth'],
-            body: z.object({
-                refreshToken: z.string(),
-            }),
-            response: {
-                200: z.object({success: z.boolean()}),
-            }
-        }
+        schema: authRouteDocs.logout
     }, authController.logout.bind(authController));
 
     app.post('/refresh-token', {
-        schema: {
-            description: 'Refresh the access token',
-            tags: ['auth'],
-            body: z.object({
-                refreshToken: z.string(),
-            }),
-            response: {
-                200: z.object({accessToken: z.string()}),
-            }
-        }
+        schema: authRouteDocs.refreshToken
     }, authController.refreshToken.bind(authController));
 
-
     app.post('/forgot-password', {
-        schema: {
-            description: 'Request a password reset',
-            tags: ['auth'],
-            body: z.object({
-                email: z.string().email(),
-            }),
-            response: {
-                200: z.object({message: z.string(), success: z.boolean()}),
-            }
-        }
+        schema: authRouteDocs.forgotPassword
     }, authController.forgotPassword.bind(authController));
 
-
     app.post('/reset-password', {
-        schema: {
-            description: 'Reset password using a reset password token',
-            tags: ['auth'],
-            body: z.object({
-                token: z.string(),
-                newPassword: z.string(),
-            }),
-            response: {
-                200: z.object({message: z.string(), success: z.boolean()}),
-            }
-        }
+        schema: authRouteDocs.resetPassword
     }, authController.resetPassword.bind(authController));
 }
