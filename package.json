@@ -8,8 +8,7 @@
     "dev": "tsx watch --env-file .env src/http/server.ts",
     "migrate": "npx drizzle-kit generate --name=init && npx drizzle-kit migrate",
     "seed": "tsx --env-file .env src/db/seed.ts",
-    "reset-db": "pnpm migrate && pnpm seed",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "reset-db": "pnpm migrate && pnpm seed"
   },
   "keywords": [],
   "author": "",
@@ -32,12 +31,9 @@
   },
   "devDependencies": {
     "@getbrevo/brevo": "^2.2.0",
-    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.13",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.5",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.3.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   },

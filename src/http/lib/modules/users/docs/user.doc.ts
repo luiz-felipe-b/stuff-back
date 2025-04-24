@@ -1,48 +1,6 @@
 import { z } from 'zod';
-import { UserSchema } from '../user.schema.js';
-import { ErrorResponseSchema, SuccessResponseSchema, commonErrorResponses } from '../../../../../types/http/responses.js';
-
-// Extract public user fields (omit sensitive data)
-const PublicUserSchema = UserSchema.omit({ 
-  password: true,
-});
-
-// Array of users response
-const UsersArraySchema = z.array(PublicUserSchema);
-
-// Create user request body
-const CreateUserSchema = z.object({
-  firstName: z.string().min(2).max(50),
-  lastName: z.string().min(2).max(50),
-  email: z.string().email(),
-  password: z.string().min(8),
-  role: z.enum(['admin', 'moderator', 'user']).optional().default('user'),
-  tier: z.enum(['free', 'plus', 'pro', 'enterprise']).optional().default('free'),
-  organizationId: z.string().optional().nullable()
-});
-
-// Update user request body
-const UpdateUserSchema = z.object({
-  firstName: z.string().min(2).max(50).optional(),
-  lastName: z.string().min(2).max(50).optional(),
-  email: z.string().email().optional(),
-  role: z.enum(['admin', 'moderator', 'user']).optional(),
-  tier: z.enum(['free', 'plus', 'pro', 'enterprise']).optional(),
-  active: z.boolean().optional(),
-  authenticated: z.boolean().optional(),
-  organizationId: z.string().optional().nullable()
-});
-
-// Update password request body
-const UpdatePasswordSchema = z.object({
-  currentPassword: z.string(),
-  newPassword: z.string().min(8)
-});
-
-// User parameters
-const UserIdParam = z.object({
-  id: z.string()
-});
+import { createUserSchema, publicUserSchema, updatePasswordSchema, updateUserSchema, userIdParamSchema } from '../user.schema';
+import { commonErrorResponses, commonSuccessResponses } from '../../../../../types/http/responses';
 
 // Export route documentation
 export const userRouteDocs = {
@@ -50,19 +8,27 @@ export const userRouteDocs = {
     description: 'Get all users',
     tags: ['user'],
     response: {
-      200: UsersArraySchema,
-      401: ErrorResponseSchema,
-      500: ErrorResponseSchema
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('Users found'),
+        data: z.array(publicUserSchema)
+      }).describe('Users found'),
+      401: commonErrorResponses[401],
+      500: commonErrorResponses[500],
     },
     security: [{ bearerAuth: [] }]
   },
 
   getUserByEmail: {
-    description: 'Get current authenticated user',
+    description: 'Get user by their email',
     tags: ['user'],
     response: {
-      200: PublicUserSchema,
-      ...commonErrorResponses
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User found'),
+        data: publicUserSchema
+      }).describe('User found'),
+      404: commonErrorResponses[404].describe('User not found'),
+      400: commonErrorResponses[400].extend({error:z.string().default('Invalid email')}).describe('Invalid email'),
+      500: commonErrorResponses[500],
     },
     security: [{ bearerAuth: [] }]
   },
@@ -70,53 +36,88 @@ export const userRouteDocs = {
   getUserById: {
     description: 'Get user by ID',
     tags: ['user'],
-    params: UserIdParam,
+    params: userIdParamSchema,
     response: {
-      200: PublicUserSchema,
-      ...commonErrorResponses
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User found'),
+        data: publicUserSchema
+      }).describe('User found'),
+      404: commonErrorResponses[404].describe('User not found'),
+      401: commonErrorResponses[401],
+      500: commonErrorResponses[500],
     },
     security: [{ bearerAuth: [] }]
   },
 
   createUser: {
+    validationSchema: false,
     description: 'Create a new user',
     tags: ['user'],
-    body: CreateUserSchema,
+    body: createUserSchema,
     response: {
-      201: PublicUserSchema,
-      ...commonErrorResponses
+      201: commonSuccessResponses[201].extend({
+        message: z.string().default('User created'),
+        data: publicUserSchema
+      }).describe('User created successfully'),
+      400: commonErrorResponses[400].describe('Bad Request'),
+      409: commonErrorResponses[409].describe('User already exists'),
+      500: commonErrorResponses[500].describe('Internal Server Error'),
     }
   },
 
   updateUser: {
     description: 'Update a user by ID',
     tags: ['user'],
-    params: UserIdParam,
-    body: UpdateUserSchema,
+    params: userIdParamSchema,
+    body: updateUserSchema,
     response: {
-      200: PublicUserSchema,
-      ...commonErrorResponses
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User updated'),
+        data: z.void()
+      }).describe('User updated successfully'),
+      400: commonErrorResponses[400].describe('Bad Request'),
+      404: commonErrorResponses[404].describe('User not found'),
     },
-    security: [{ bearerAuth: [] }]
+  },
+
+  getMe: {
+    description: 'Get current authenticated user',
+    tags: ['user'],
+    response: {
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User found'),
+        data: publicUserSchema
+      }).describe('User found'),
+      400: commonErrorResponses[400].describe('Bad Request'),
+      401: commonErrorResponses[401].describe('Unauthorized'),
+      404: commonErrorResponses[404].describe('User not found'),
+    },
   },
 
   updateMe: {
     description: 'Update current authenticated user',
     tags: ['user'],
-    body: UpdateUserSchema,
+    body: updateUserSchema,
     response: {
-      200: PublicUserSchema,
-      ...commonErrorResponses
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User updated'),
+        data: z.void()
+      }).describe('User updated successfully'),
+      400: commonErrorResponses[400].describe('Bad Request'),
+      401: commonErrorResponses[401].describe('Unauthorized'),
+      404: commonErrorResponses[404].describe('User not found'),
     },
-    security: [{ bearerAuth: [] }]
   },
 
   updateMePassword: {
     description: 'Update current authenticated user password',
     tags: ['user'],
-    body: UpdatePasswordSchema,
+    body: updatePasswordSchema,
     response: {
-      200: SuccessResponseSchema,
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User updated'),
+        data: z.void()
+      }).describe('User updated successfully'),
       ...commonErrorResponses
     },
     security: [{ bearerAuth: [] }]
@@ -125,9 +126,12 @@ export const userRouteDocs = {
   deleteUser: {
     description: 'Delete a user by ID',
     tags: ['user'],
-    params: UserIdParam,
+    params: userIdParamSchema,
     response: {
-      200: SuccessResponseSchema,
+      200: commonSuccessResponses[200].extend({
+        message: z.string().default('User deleted'),
+        data: z.void()
+      }).describe('User was successfully deleted'),
       ...commonErrorResponses
     },
     security: [{ bearerAuth: [] }]

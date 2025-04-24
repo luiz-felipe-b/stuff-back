@@ -1,11 +1,11 @@
 import { nanoid } from "nanoid";
-import { User } from "./user.schema.ts";
-import { UserRepository } from "./repositories/users.repository.js";
+import { CreateUserSchema, PublicUser, UpdateUserSchema, User } from "./user.schema";
+import { UserRepository } from "./repositories/users.repository";
 import { z } from "zod";
-import { hashPassword } from "../../util/hash-password.js";
-import { HttpError } from "../../util/errors/http-error.js";
+import { hashPassword } from "../../util/hash-password";
+import { HttpError } from "../../util/errors/http-error";
 import { FastifyRequest } from "fastify";
-import app from "../../../app.ts";
+import app from "../../../app";
 
 export class UserService {
     constructor(private userRepository: UserRepository) {}
@@ -15,17 +15,12 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserById(req: FastifyRequest): Promise<Omit<User, "password"> | null> {
-        const requestSchema = z.object({
-            id: z.string(),
-        });
-
-        const validated = requestSchema.safeParse(req.params);
-        if (!validated.success) {
-            throw new Error('Missing or invalid id');
+    async getUserById(id: string): Promise<PublicUser | null> {
+        const user = await this.userRepository.findById(id);
+        if (!user) {
+            throw new HttpError('User not found', 404);
         }
-
-        return this.userRepository.findById(validated.data.id);
+        return user;
     }
 
     /**
@@ -33,44 +28,11 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserByEmail(req: FastifyRequest): Promise<Omit<User, "password"> | null> {
-        const requestSchema = z.object({
-            email: z.string().email(),
-        })
-
-        const validated = requestSchema.safeParse(req.body);
-        if (!validated.success) {
-            throw new Error('Missing or invalid email');
+    async getUserByEmail(email: string): Promise<PublicUser | null> {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new HttpError('User not found', 404);
         }
-
-        return this.userRepository.findByEmail(validated.data.email);
-    }
-
-    /**
-     * Obtém o usuário autenticado
-     * @param req - Requisição HTTP
-     * @returns Promise<User | null>
-     */
-    async getMe(req: FastifyRequest): Promise<Omit<User, "password"> | null> {
-        const cookiesSchema = z.object({
-            refreshToken: z.string(),
-        });
-        const validated = cookiesSchema.safeParse(req.cookies);
-        if (!validated.success) {
-            throw new Error('Missing or invalid refresh token');
-        }
-
-        const decodedToken = app.jwt.verify(validated.data.refreshToken) as { userId: string };
-        if (decodedToken === null) {
-            throw new Error('Invalid refresh token');
-        }
-        const userId = decodedToken.userId;
-
-        const user = await this.userRepository.findById(userId);
-        if (user === null) {
-            throw new Error('User not found');
-        }
-
         return user;
     }
     
@@ -79,7 +41,7 @@ export class UserService {
      * Obtém todos os usuários
      * @returns Promise<User[]>
      */
-    async getAllUsers(): Promise<Omit<User, "password">[]> {
+    async getAllUsers(): Promise<PublicUser[]> {
         return this.userRepository.findAll();
     }
 
@@ -88,34 +50,22 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User>
      */
-    async createUser(req: FastifyRequest): Promise<User> {
-        const requestSchema = z.object({
-            firstName: z.string(),
-            lastName: z.string(),
-            email: z.string().email(),
-            password: z.string(),
-            tier: z.enum(["free", "plus", "pro", "enterprise"]),
-        });
-        const validated = requestSchema.safeParse(req.body);
-        if (!validated.success) {
-            throw new HttpError('Missing or invalid parameters', 400, 'Bad Request');
-        }
-
-        const userExists = await this.userRepository.findByEmail(validated.data.email);
+    async createUser(user: CreateUserSchema): Promise<PublicUser> {
+        const userExists = await this.userRepository.findByEmail(user.email);
         if (userExists) {
-            throw new Error('User already exists');
+            throw new HttpError('User already exists', 409);
         }
 
-        const hashedPassword = await hashPassword(validated.data.password);
+        const hashedPassword = await hashPassword(user.password);
 
-        const newUser: Omit<User, 'createdAt' | 'updatedAt' | 'active' | 'authenticated'> = {
+        const newUser = {
             id: nanoid(),
-            firstName: validated.data.firstName,
-            lastName: validated.data.lastName,
-            email: validated.data.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
             password: hashedPassword,
-            role: "admin",
-            tier: "free",
+            role: user.role,
+            tier: user.tier,
         }
 
         return this.userRepository.create(newUser);
@@ -126,40 +76,14 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User>
      */
-    async updateUser(req: FastifyRequest): Promise<User> {
-        // Define o schema dos parametros da requisição
-        const paramSchema = z.object({
-            id: z.string(),
-        });
-        // Valida os parametros da requisição
-        const validatedParams = paramSchema.safeParse(req.params);
-        if (!validatedParams.success) {
-            throw new HttpError('Missing or invalid id', 400);
-        }
-
-        // Define o schema dos parametros do corpo da requisição
-        const bodySchema = z.object({
-            organizationId: z.string().nullable().optional(),
-            firstName: z.string().optional(),
-            lastName: z.string().optional(),
-            email: z.string().email().optional(),
-            password: z.string().optional(),
-            active: z.boolean().optional(),
-            type: z.enum(["admin", "staff", "root", "invited"]).optional(),
-        });
-        // Valida os parametros da requisição
-        const validatedBody = bodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
-        }
-        // Se todos os parametros estiverem indefinidos, lança um erro
-        if (Object.values(validatedBody.data).every(value => value === undefined)) {
+    async updateUser(id: string, data: UpdateUserSchema): Promise<void> {
+        if (Object.values(data).every(value => value === undefined)) {
             throw new HttpError('No parameters to update', 400);
         }
 
         const updatedData = {
-            id: validatedParams.data.id,
-            ...Object.entries(validatedBody.data).reduce((acc, [key, value]) => {
+            id,
+            ...Object.entries(data).reduce((acc, [key, value]) => {
                 if (value !== undefined) {
                     acc[key] = value;
                 }
@@ -167,7 +91,10 @@ export class UserService {
             }, {} as Partial<User>),
         }
 
-        return this.userRepository.update(updatedData);
+        const user = this.userRepository.update(updatedData);
+        if (!user) {
+            throw new HttpError('User not found', 404);
+        }
     }
 
     /**
@@ -175,97 +102,67 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async updateMe(req: FastifyRequest): Promise<User | null> {
-        const cookiesSchema = z.object({
-            refreshToken: z.string(),
-        });
-        const validated = cookiesSchema.safeParse(req.cookies);
-        if (!validated.success) {
-            throw new Error('Missing or invalid refresh token');
-        }
+    // async updateMe(id: string, user: UpdateUserSchema): Promise<PublicUser | null> {
+    //     const cookiesSchema = z.object({
+    //         refreshToken: z.string(),
+    //     });
+    //     const validated = cookiesSchema.safeParse(req.cookies);
+    //     if (!validated.success) {
+    //         throw new Error('Missing or invalid refresh token');
+    //     }
 
-        const decodedToken = app.jwt.verify(validated.data.refreshToken) as { userId: string };
-        if (decodedToken === null) {
-            throw new Error('Invalid refresh token');
-        }
-        const userId = decodedToken.userId;
+    //     const decodedToken = app.jwt.verify(validated.data.refreshToken) as { userId: string };
+    //     if (decodedToken === null) {
+    //         throw new Error('Invalid refresh token');
+    //     }
+    //     const userId = decodedToken.userId;
 
-        const user = await this.userRepository.findById(userId);
-        if (user === null) {
-            throw new Error('User not found');
-        }
+    //     const user = await this.userRepository.findById(userId);
+    //     if (user === null) {
+    //         throw new Error('User not found');
+    //     }
 
-        const requestBodySchema = z.object({
-            firstName: z.string().optional(),
-            lastName: z.string().optional(),
-            email: z.string().email().optional(),
-            updatedAt: z.date().optional().default(new Date()),
-        })
-        const validatedBody = requestBodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            throw new Error('Missing or invalid parameters');
-        }
+    //     const requestBodySchema = z.object({
+    //         firstName: z.string().optional(),
+    //         lastName: z.string().optional(),
+    //         email: z.string().email().optional(),
+    //         updatedAt: z.date().optional().default(new Date()),
+    //     })
+    //     const validatedBody = requestBodySchema.safeParse(req.body);
+    //     if (!validatedBody.success) {
+    //         throw new Error('Missing or invalid parameters');
+    //     }
 
-        const updatedData = {
-            id: user.id,
-            ...Object.entries(validatedBody.data).reduce((acc, [key, value]) => {
-                if (value !== undefined) {
-                    acc[key] = value;
-                }
-                return acc;
-            }, {} as Partial<User>),
-        }
-        // Se todos os parametros estiverem indefinidos, lança um erro
-        if (Object.values(validatedBody.data).every(value => value === undefined)) {
-            throw new Error('No parameters to update');
-        }
-        // Atualiza o usuário
-        const updatedUser = await this.userRepository.update(updatedData);
-        if (updatedUser === null) {
-            throw new Error('User not found');
-        }
+    //     const updatedData = {
+    //         id: user.id,
+    //         ...Object.entries(validatedBody.data).reduce((acc, [key, value]) => {
+    //             if (value !== undefined) {
+    //                 acc[key] = value;
+    //             }
+    //             return acc;
+    //         }, {} as Partial<User>),
+    //     }
+    //     // Se todos os parametros estiverem indefinidos, lança um erro
+    //     if (Object.values(validatedBody.data).every(value => value === undefined)) {
+    //         throw new Error('No parameters to update');
+    //     }
+    //     // Atualiza o usuário
+    //     const updatedUser = await this.userRepository.update(updatedData);
+    //     if (updatedUser === null) {
+    //         throw new Error('User not found');
+    //     }
 
-        return updatedUser;
-    }
+    //     return updatedUser;
+    // }
 
     /**
      * Obtém o usuário autenticado
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async updatePasswordMe(req: FastifyRequest): Promise<User | null> {
-        const cookiesSchema = z.object({
-            refreshToken: z.string(),
-        });
-        const validated = cookiesSchema.safeParse(req.cookies);
-        if (!validated.success) {
-            throw new Error('Missing or invalid refresh token');
-        }
-
-        // Verifica se o token de refresh é válido e decodifica o ID do usuário
-        const decodedToken = app.jwt.verify(validated.data.refreshToken) as { userId: string };
-        if (decodedToken === null) {
-            throw new Error('Invalid refresh token');
-        }
-        const userId = decodedToken.userId;
-
-        // Verifica se o usuário existe
-        const user = await this.userRepository.findById(userId);
-        if (user === null) {
-            throw new Error('User not found');
-        }
-
-        const requestBodySchema = z.object({
-            newPassword: z.string(),
-            oldPassword: z.string(),
-        })
-        const validatedBody = requestBodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            throw new Error('Missing or invalid parameters');
-        }
-
+    async updatePasswordMe(id: string, passwordData: {newPassword: string, currentPassword:string}): Promise<PublicUser | null> {
         // Se todos os parametros estiverem indefinidos, lança um erro
-        if (validatedBody.data.newPassword === undefined || validatedBody.data.oldPassword === undefined || validatedBody.data.newPassword === '') {
+        if (passwordData.newPassword === undefined || passwordData.currentPassword === undefined || passwordData.newPassword === '') {
             throw new Error('No parameters to update');
         }
 
@@ -277,8 +174,8 @@ export class UserService {
         
         // Atualiza a senha do usuário
         const updatedUser = await this.userRepository.update({
-            id: user.id,
-            password: validatedBody.data.newPassword,
+            id,
+            password: await hashPassword(passwordData.newPassword),
         });
 
         return updatedUser;
@@ -289,16 +186,10 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User>
      */
-    async deleteUser(req: FastifyRequest): Promise<User> {
-        const requestSchema = z.object({
-            id: z.string(),
-        });
-
-        const validated = requestSchema.safeParse(req.params);
-        if (!validated.success) {
-            throw new Error('Missing or invalid id');
+    async deleteUser(id: string): Promise<void> {
+        const user = await this.userRepository.delete(id);
+        if (!user) {
+            throw new HttpError('User not found', 404);
         }
-
-        return this.userRepository.delete(validated.data.id);
     }
 }

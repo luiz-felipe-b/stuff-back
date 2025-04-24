@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { AuthService } from "./auth.service.ts";
 import { Controller } from "../../common/controllers/controller.ts";
+import { SuccessResponse, TokenResponse } from "../../../../types/http/responses.ts";
 
 export class AuthController extends Controller {
     private authService: AuthService;
@@ -10,7 +11,7 @@ export class AuthController extends Controller {
         this.authService = authService;
     }
 
-    async login(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    async login(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
             const tokens = await this.authService.login(req);
             reply
@@ -25,10 +26,10 @@ export class AuthController extends Controller {
         });
     }
 
-    async logout(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    async logout(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
             await this.authService.logout(req);
-            reply.clearCookie('refreshToken', { path: '/' }).send({ success: true });
+            reply.clearCookie('refreshToken', { path: '/' }).send({ message:'Succesfully logged out.', success: true });
             return reply;
         });
     }

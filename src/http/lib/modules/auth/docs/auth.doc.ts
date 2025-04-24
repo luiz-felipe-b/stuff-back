@@ -1,6 +1,17 @@
 import { z } from 'zod';
 import { ErrorResponseSchema, SuccessResponseSchema, TokenResponseSchema, commonErrorResponses } from '../../../../../types/http/responses.js';
 
+
+// Forgot password request body
+const ForgotPasswordSchema = z.object({
+    email: z.string().email()
+});
+
+// Reset password request body
+const ResetPasswordSchema = z.object({
+    token: z.string(),
+    newPassword: z.string().min(8)
+});
 // Login request body
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -10,17 +21,6 @@ const LoginSchema = z.object({
 // Refresh token request body
 const RefreshTokenSchema = z.object({
   refreshToken: z.string()
-});
-
-// Forgot password request body
-const ForgotPasswordSchema = z.object({
-  email: z.string().email()
-});
-
-// Reset password request body
-const ResetPasswordSchema = z.object({
-  token: z.string(),
-  newPassword: z.string().min(8)
 });
 
 // Export route documentation

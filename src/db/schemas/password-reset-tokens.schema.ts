@@ -4,7 +4,7 @@ import { users } from './users.schema.ts';
 
 const columns = {
     id: text('id').$defaultFn(() => nanoid()).primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     token: text('token').notNull(),
     revoked: boolean('revoked').notNull().default(false),
     expiresAt: timestamp('expires_at').notNull(),

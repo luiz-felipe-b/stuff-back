@@ -70,7 +70,6 @@ export class EmailService {
             sendSmtpEmail.to = options.to;
 
             const data = await this.apiInstance.sendTransacEmail(sendSmtpEmail);
-            console.log('API called successfully. Returned data: ' + JSON.stringify(data));
             
             // email.to = options.to;
             // email.subject = options.subject;

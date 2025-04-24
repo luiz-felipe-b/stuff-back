@@ -10,34 +10,48 @@ export async function userRoutes(app: FastifyTypedInstance) {
     const userController = new UserController(userService);
 
     app.get('/', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.getAllUsers
     }, userController.getAllUsers.bind(userController));
 
-    app.get('/me', {
-        schema: userRouteDocs.getUserByEmail
-    }, userController.getUserByEmail.bind(userController));
-
     app.get('/:id', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.getUserById
     }, userController.getUserById.bind(userController));
 
+    app.get('/email/:email', {
+        onRequest: [app.authenticate],
+        schema: userRouteDocs.getUserByEmail
+    }, userController.getUserByEmail.bind(userController));
+
+    app.get('/me', {
+        onRequest: [app.authenticate],
+        schema: userRouteDocs.getMe
+    }, userController.getMe.bind(userController));
+
     app.post('/', {
-        schema: userRouteDocs.createUser
+        onRequest: [app.authenticate],
+        schema: userRouteDocs.createUser,
+        attachValidation: true
     }, userController.createUser.bind(userController));
 
     app.patch('/:id', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.updateUser
     }, userController.updateUser.bind(userController));
 
     app.patch('/me', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.updateMe
     }, userController.updateMe.bind(userController));
 
     app.post('/me/password', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.updateMePassword
     }, userController.updateMePassword.bind(userController));
 
     app.delete('/:id', {
+        onRequest: [app.authenticate],
         schema: userRouteDocs.deleteUser
     }, userController.deleteUser.bind(userController));
 }
