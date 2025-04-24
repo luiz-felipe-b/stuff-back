@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file .env src/http/server.ts",
+    "build": "vite build",
     "migrate": "npx drizzle-kit generate --name=init && npx drizzle-kit migrate",
     "seed": "tsx --env-file .env src/db/seed.ts",
     "reset-db": "pnpm migrate && pnpm seed"
@@ -27,6 +28,7 @@
     "nanoid": "^5.1.5",
     "nodemailer": "^6.10.0",
     "pg": "^8.14.1",
+    "vite": "^6.3.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "@types/node": "^22.13.13",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.5",
+    "mysql2": "^3.14.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   },

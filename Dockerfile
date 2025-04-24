@@ -31,13 +31,20 @@ RUN pnpm install --frozen-lockfile
 # Copy application code
 COPY . .
 
+# Build the application
+RUN pnpm build
 
 # Final stage for app image
 FROM base
 
 # Copy built application
-COPY --from=build /app /app
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/pnpm-lock.yaml /app/pnpm-lock.yaml
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "index.js" ]
+CMD [ "node", "dist/http/server.cjs" ]
