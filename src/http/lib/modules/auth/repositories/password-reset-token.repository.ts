@@ -5,7 +5,6 @@ import { eq, and } from "drizzle-orm";
 
 export class PasswordResetTokenRepository{
     async savePasswordResetToken(token: string, userId: string, expiresAt: Date): Promise<PasswordResetTokenSchema> {
-        console.log(token)
         const [result] = await db.insert(passwordResetTokens).values({ token, userId, expiresAt }).returning();
         return result;
     }

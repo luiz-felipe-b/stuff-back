@@ -21,20 +21,20 @@ export class AuthService {
         });
         const validation = requestSchema.safeParse(req.body);
         if (!validation.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
+            throw new HttpError('Missing or invalid parameters', 400, 'Bad Request');
         }
 
         const { email, password } = validation.data;
 
         // Verificar se o usuário existe
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this.userRepository.findByEmailWithPassword(email);
         if (!user) {
-            throw new HttpError('User not found', 404);
+            throw new HttpError('User not found', 404, 'Not Found');
         }
 
         // Verificar se a senha está correta
         if (!(await verifyPassword(password, user.password))) {
-            throw new HttpError('Invalid credentials', 401);
+            throw new HttpError('Invalid credentials', 401, 'Unauthorized');
         }
 
         // Gerar tokens
@@ -142,7 +142,6 @@ export class AuthService {
 
         const expirationDate = new Date();
         expirationDate.setHours(expirationDate.getHours() + 1);
-        console.log(user.id)
         await this.passwordResetTokenRepository.savePasswordResetToken(resetToken, user.id, expirationDate);
 
         return;

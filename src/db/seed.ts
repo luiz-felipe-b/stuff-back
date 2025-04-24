@@ -27,7 +27,7 @@ async function seed() {
             password: adminPassword,
             role: 'admin',
             active: true,
-            authenticated: true,
+            authenticated: false,
             createdAt: new Date(),
             updatedAt: new Date()
         }).onConflictDoNothing();

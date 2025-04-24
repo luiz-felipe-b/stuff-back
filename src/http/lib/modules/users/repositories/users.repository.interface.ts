@@ -1,10 +1,10 @@
-import { User } from "../models/user-model";
+import { PublicUser } from "../user.schema";
 
 export interface UserRepositoryInterface {
-    findById(id: string): Promise<User | null>;
-    findByEmail(email: string): Promise<User | null>;
-    findAll(): Promise<User[]>;
-    create(data: any): Promise<User>;
-    update(data: any): Promise<User>;
-    delete(id: string): Promise<User>;
+    findById(id: string): Promise<PublicUser | null>;
+    findByEmail(email: string): Promise<PublicUser | null>;
+    findAll(): Promise<PublicUser[]>;
+    create(data: any): Promise<PublicUser>;
+    update(data: any): Promise<PublicUser>;
+    delete(id: string): Promise<PublicUser>;
 }

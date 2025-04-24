@@ -3,7 +3,7 @@ import { registerRoutes } from './routes.js';
 import { appSetup } from './app-setup.js';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
-const app = fastify().withTypeProvider<ZodTypeProvider>();
+const app = fastify({logger: true}).withTypeProvider<ZodTypeProvider>();
 
 await appSetup(app);
 
