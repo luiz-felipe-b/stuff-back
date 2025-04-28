@@ -62,7 +62,8 @@ export const userRouteDocs = {
       400: commonErrorResponses[400].describe('Bad Request'),
       409: commonErrorResponses[409].describe('User already exists'),
       500: commonErrorResponses[500].describe('Internal Server Error'),
-    }
+    },
+    security: [{ bearerAuth: [] }]
   },
 
   updateUser: {
@@ -78,6 +79,7 @@ export const userRouteDocs = {
       400: commonErrorResponses[400].describe('Bad Request'),
       404: commonErrorResponses[404].describe('User not found'),
     },
+    security: [{ bearerAuth: [] }]
   },
 
   getMe: {
@@ -92,6 +94,7 @@ export const userRouteDocs = {
       401: commonErrorResponses[401].describe('Unauthorized'),
       404: commonErrorResponses[404].describe('User not found'),
     },
+    security: [{ bearerAuth: [] }]
   },
 
   updateMe: {
@@ -107,6 +110,7 @@ export const userRouteDocs = {
       401: commonErrorResponses[401].describe('Unauthorized'),
       404: commonErrorResponses[404].describe('User not found'),
     },
+    security: [{ bearerAuth: [] }]
   },
 
   updateMePassword: {

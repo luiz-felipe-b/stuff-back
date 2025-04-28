@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { CreateUserSchema, PublicUser, UpdateUserSchema, User } from "./user.schema";
 import { UserRepository } from "./repositories/users.repository";
 import { z } from "zod";
@@ -6,7 +5,14 @@ import { hashPassword } from "../../util/hash-password";
 import { HttpError } from "../../util/errors/http-error";
 import { FastifyRequest } from "fastify";
 import app from "../../../app";
+import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Serviço de Usuário
+ * @description Este serviço é responsável por gerenciar as operações relacionadas aos usuários.
+ * @class UserService
+ * @param userRepository - Repositório de Usuário
+ */
 export class UserService {
     constructor(private userRepository: UserRepository) {}
 
@@ -51,15 +57,11 @@ export class UserService {
      * @returns Promise<User>
      */
     async createUser(user: CreateUserSchema): Promise<PublicUser> {
-        const userExists = await this.userRepository.findByEmail(user.email);
-        if (userExists) {
-            throw new HttpError('User already exists', 409);
-        }
 
         const hashedPassword = await hashPassword(user.password);
 
         const newUser = {
-            id: nanoid(),
+            id: uuidv4(),
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
@@ -68,7 +70,9 @@ export class UserService {
             tier: user.tier,
         }
 
-        return this.userRepository.create(newUser);
+        const result = this.userRepository.create(newUser);
+        console.log(result);
+        return result;
     }
 
     /**

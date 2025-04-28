@@ -3,6 +3,7 @@ import { PublicUser, User } from "../user.schema.ts";
 import { db } from "../../../../../db/connection";
 import { users } from "../../../../../db/schemas/users.schema.ts";
 import { eq } from "drizzle-orm";
+import { HttpError } from "../../../util/errors/http-error.ts";
 
 export class UserRepository implements UserRepositoryInterface {
     private removeSensitiveInfo(user: User): Omit<User, 'password'> {
@@ -42,8 +43,15 @@ export class UserRepository implements UserRepositoryInterface {
     }
 
     async create(data: Omit<User, 'createdAt' | 'updatedAt' | 'active' | 'authenticated'>): Promise<PublicUser> {
-        const [result] = await db.insert(users).values(data).returning() as PublicUser[];
-        return result;
+        try {
+            const [result] = await db.insert(users).values(data).returning() as PublicUser[];
+            return result;
+        } catch (error) {
+            if (error.code === '23505' && error.constraint === 'users_email_unique') {
+                throw new HttpError('User already exists', 409);
+            }
+            throw new Error('Error creating user');
+        }
     }
 
     async update(data: Partial<User>): Promise<Omit<User, 'password'>> {

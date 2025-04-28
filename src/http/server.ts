@@ -6,7 +6,7 @@ app.get('/', async (request, reply) => {
 });
 
 app.listen({
-    port: 3333,
+    port: 3000,
     host: '0.0.0.0'
 }).then(() => {
     console.log('🐕 Server is listening!');

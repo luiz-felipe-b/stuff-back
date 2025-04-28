@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { authRoutes } from "./lib/modules/auth/auth.routes.ts";
 import { userRoutes } from "./lib/modules/users/users.routes.ts";
+import { organizationsRoutes } from "./lib/modules/organizations/organizations.routes.ts";
 
 export async function registerRoutes(app: FastifyInstance) {
   app.register(authRoutes, { prefix: '/auth' });
   app.register(userRoutes, { prefix: '/users' });
-  app.register
+  app.register(organizationsRoutes, { prefix: '/organizations' });
 }

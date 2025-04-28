@@ -6,10 +6,11 @@ import { FastifyTypedInstance } from '../types/fastify-typed-instance.js';
 
 const app = fastify({logger: true}).withTypeProvider<ZodTypeProvider>();
 
-async function start(app: FastifyTypedInstance) {
+export async function start(app: FastifyTypedInstance) {
     await appSetup(app);
-    
     await registerRoutes(app);
 }
+
+start(app)
 
 export default app;

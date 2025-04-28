@@ -1,8 +1,8 @@
 import { db } from './connection.ts';
 import { users } from './schemas/users.schema.ts';
-import { nanoid } from 'nanoid';
 import argon2 from 'argon2';
 import { env } from '../env.ts';
+import { v4 as uuidv4 } from 'uuid';
 
 async function seed() {
 
@@ -20,7 +20,7 @@ async function seed() {
         // Create admin user
         const adminPassword = await argon2.hash('admin123');
         await db.insert(users).values({
-            id: nanoid(),
+            id: uuidv4(),
             firstName: 'Admin',
             lastName: 'User',
             email: 'admin@example.com',
@@ -56,7 +56,7 @@ async function seed() {
 
         for (const user of sampleUsers) {
             await db.insert(users).values({
-                id: nanoid(),
+                id: nanoid.nanoid(),
                 ...user,
                 password,
                 role: 'user',

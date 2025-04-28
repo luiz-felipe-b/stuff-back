@@ -1,16 +1,16 @@
 import { pgTable, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
-import { nanoid } from 'nanoid';
 import { User } from '../../http/lib/modules/users/user.schema.ts';
 import { AnyType } from '../../types/any-type.js';
 import { relations } from 'drizzle-orm';
 import { organizations } from './organizations.schema.ts';
+import { v4 as uuidv4 } from 'uuid';
 
 export const userRoles = pgEnum('user_types', ['admin', 'moderator', 'user']);
 
 export const userTiers = pgEnum('user_tiers', ['free', 'plus', 'pro', 'enterprise']);
 
 const columns: AnyType<User> = {
-    id: text('id').$defaultFn(() => nanoid()).primaryKey(),
+    id: text('id').$defaultFn(() => uuidv4()).primaryKey(),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
     email: text('email').notNull().unique(),
