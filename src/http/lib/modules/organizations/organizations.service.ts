@@ -6,4 +6,8 @@ export class OrganizationService {
     constructor(organizationRepository: OrganizationRepository) {
         this.organizationRepository = organizationRepository;
     }
+
+    async getAllOrganizations() {
+        return this.organizationRepository.getAll();
+    }
 }

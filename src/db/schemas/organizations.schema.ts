@@ -1,22 +1,28 @@
-import { relations } from "drizzle-orm";
-import { boolean, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { Column, relations } from "drizzle-orm";
+import { boolean, date, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
 import { users } from "./users.schema.ts";
 import { itemTemplates } from "../../http/lib/modules/items/schemas/items/items-templates-schema.ts";
 import { AnyType } from "../../types/any-type.js";
+import { Organization, organizationSchema } from "../../http/lib/modules/organizations/organizations.schema.ts";
+import { ValidateTableAgainstZodSchema } from "../../types/validation/validate-table-against-zod-schema.js";
 
-const columns: AnyType<any> = {
+const columns = {
     id: text('id').primaryKey(),
-    author: text('author_id').references(() => users.id),
-    organizationSlug: text('slug').notNull(),
+    ownerId: text('author_id').references(() => users.id),
     name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    password: boolean('password'),
+    description: text('description').notNull(),
     active: boolean('active').notNull().default(true),
-    creationDate: text('creation_date').notNull(),
-}
+    createdAt: date('creation_date').notNull(),
+    updatedAt: date('update_date').notNull(),
+    logo: text('logo'),
+} satisfies ValidateTableAgainstZodSchema<typeof columns, typeof organizationSchema>;
 
 export const organizations = pgTable('organizations', columns);
 
-export const organizationsRelations = relations(organizations, ({ one, many }) => ({
-    author: one(users, { fields: [organizations.author], references: [users.id] }),
-    // users: many(users),
-    // items: many(itemTemplates),
-}))
+// export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+//     author: one(users, { fields: [organizations.author], references: [users.id] }),
+//     // users: many(users),
+//     // items: many(itemTemplates),
+// }))
