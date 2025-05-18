@@ -14,8 +14,9 @@ export class OrganizationController extends Controller {
         return this.handleRequest(request, reply, async () => {
             const organizations = await this.organizationService.getAllOrganizations();
             return reply.code(200).send({ data: organizations, message: 'Organizations found' });
-        }
+        });
     }
+    
 
     async getOrganizationById(request:FastifyRequest, reply:FastifyReply) {
         return;

@@ -7,6 +7,7 @@ import { validatorCompiler, serializerCompiler, jsonSchemaTransform } from "fast
 import { env } from "../env";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
+import cors from '@fastify/cors'
 
 const tokenPayloadSchema = z.object({
     id: z.string(),
@@ -27,6 +28,11 @@ export async function appSetup(app: FastifyInstance) {
     app.setSerializerCompiler(serializerCompiler);
 
     app.register(fastifyCookie);
+
+    app.register(cors, {
+        origin: true,
+        credentials: true,
+    })
 
     app.register(fastifySwagger, {
         openapi: {

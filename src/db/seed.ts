@@ -56,11 +56,10 @@ async function seed() {
 
         for (const user of sampleUsers) {
             await db.insert(users).values({
-                id: nanoid.nanoid(),
+                id: uuidv4(),
                 ...user,
                 password,
                 role: 'user',
-                organizationId: null,
                 active: true,
                 authenticated: false,
                 createdAt: new Date(),

@@ -2,8 +2,8 @@ import { pgTable, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { User } from '../../http/lib/modules/users/user.schema.ts';
 import { AnyType } from '../../types/any-type.js';
 import { relations } from 'drizzle-orm';
-import { organizations } from './organizations.schema.ts';
 import { v4 as uuidv4 } from 'uuid';
+import { usersOrganizations } from './users-organizations.schema.ts';
 
 export const userRoles = pgEnum('user_types', ['admin', 'moderator', 'user']);
 
@@ -13,6 +13,9 @@ const columns: AnyType<User> = {
     id: text('id').$defaultFn(() => uuidv4()).primaryKey(),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
+    userName: text('user_name').unique().$defaultFn(() => {
+        return 'user_' + Math.random().toString(36).substring(2, 8);
+    }),
     email: text('email').notNull().unique(),
     password: text('password').notNull(),
     role: userRoles('role').notNull().default('user'),
@@ -26,4 +29,8 @@ const columns: AnyType<User> = {
 }
 
 export const users = pgTable('users', columns)
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+    usersOrganizations: many(usersOrganizations),
+}));
 

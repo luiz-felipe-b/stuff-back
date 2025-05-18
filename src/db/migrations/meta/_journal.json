@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1743132704278,
+      "when": 1747599106694,
       "tag": "0000_init",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1743984454865,
+      "when": 1747600052425,
       "tag": "0001_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1744686663105,
-      "tag": "0002_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1744686707962,
-      "tag": "0003_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1745295228489,
-      "tag": "0004_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1745457747182,
-      "tag": "0005_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1745880189787,
-      "tag": "0006_init",
       "breakpoints": true
     }
   ]
