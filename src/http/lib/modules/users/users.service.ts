@@ -64,6 +64,7 @@ export class UserService {
             id: uuidv4(),
             firstName: user.firstName,
             lastName: user.lastName,
+            userName: user.userName,
             email: user.email,
             password: hashedPassword,
             role: user.role,

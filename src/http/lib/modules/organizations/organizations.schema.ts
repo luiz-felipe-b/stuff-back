@@ -5,10 +5,9 @@ export const organizationSchema = z.object({
     ownerId: z.string(),
     name: z.string(),
     slug: z.string(),
-    description: z.string(),
-    logo: z.string().nullable().optional(),
+    description: z.string().optional(),
     password: z.string().optional(),
-    active: z.boolean(),
+    active: z.boolean().default(true),
     createdAt: z.date(),
     updatedAt: z.date(),
 })

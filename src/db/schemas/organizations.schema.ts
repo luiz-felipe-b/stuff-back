@@ -12,12 +12,11 @@ const columns: AnyType<Organization> = {
     name: text('name').notNull(),
     slug: text('slug').notNull(),
     password: text('password'),
-    description: text('description').notNull(),
+    description: text('description'),
     active: boolean('active').notNull().default(true),
-    createdAt: timestamp('creation_date').notNull(),
-    updatedAt: timestamp('update_date').notNull(),
-    logo: text('logo'),
-} satisfies ValidateTableAgainstZodSchema<typeof columns, typeof organizationSchema>;
+    createdAt: timestamp('creation_date').notNull().defaultNow(),
+    updatedAt: timestamp('update_date').notNull().defaultNow(),
+};
 
 export const organizations = pgTable('organizations', columns);
 

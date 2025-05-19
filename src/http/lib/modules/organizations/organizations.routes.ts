@@ -14,24 +14,24 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     schema: organizationRouteDocs.getAllOrganizations
   }, organizationController.getAllOrganizations.bind(organizationController));
 
-  app.get('/:id', {
+  app.get('/:identifier', {
     onRequest: [app.authenticate],
-    schema: organizationRouteDocs.getOrganizationById
-  }, organizationController.getOrganizationById.bind(organizationController));
+    schema: organizationRouteDocs.getOrganizationByIdentifier
+  }, organizationController.getOrganizationByIdentifier.bind(organizationController));
 
   app.post('/', {
-    onRequest: [app.authenticate],
+    // onRequest: [app.authenticate],
     schema: organizationRouteDocs.createOrganization,
     attachValidation: true
   }, organizationController.createOrganization.bind(organizationController));
 
-  app.patch('/:id', {
-    onRequest: [app.authenticate],
-    schema: organizationRouteDocs.updateOrganization
-  }, organizationController.updateOrganization.bind(organizationController));
+  // app.patch('/:id', {
+  //   onRequest: [app.authenticate],
+  //   schema: organizationRouteDocs.updateOrganization
+  // }, organizationController.updateOrganization.bind(organizationController));
 
-  app.delete('/:id', {
-    onRequest: [app.authenticate],
-    schema: organizationRouteDocs.deleteOrganization
-  }, organizationController.deleteOrganization.bind(organizationController));
+  // app.delete('/:id', {
+  //   onRequest: [app.authenticate],
+  //   schema: organizationRouteDocs.deleteOrganization
+  // }, organizationController.deleteOrganization.bind(organizationController));
 }

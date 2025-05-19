@@ -8,7 +8,7 @@ export const userSchema = z.object({
     userName: z.string(),
     email: z.string().email(),
     password: z.string(),
-    role: z.enum(['root', 'moderator', 'user']),
+    role: z.enum(['admin', 'moderator', 'user']),
     tier: z.enum(['free', 'plus', 'pro', 'enterprise']),
     active: z.boolean(),
     authenticated: z.boolean(),
@@ -28,6 +28,7 @@ export type PublicUser = z.infer<typeof publicUserSchema>;
 export const createUserSchema = z.object({
     firstName: z.string().min(2).max(50),
     lastName: z.string().min(2).max(50),
+    userName: z.string().min(2).max(50),
     email: z.string().email(),
     password: z.string().min(8),
     role: z.enum(['admin', 'moderator', 'user']).optional().default('user'),

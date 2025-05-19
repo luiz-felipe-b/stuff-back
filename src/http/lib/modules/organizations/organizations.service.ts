@@ -1,4 +1,8 @@
+import { z } from 'zod';
 import { OrganizationRepository } from './organizations.repository';
+import { HttpError } from '../../util/errors/http-error';
+import { v4 as uuidv4 } from "uuid";
+import { hashPassword } from '../../util/hash-password';
 
 export class OrganizationService {
     private organizationRepository: OrganizationRepository;
@@ -9,5 +13,38 @@ export class OrganizationService {
 
     async getAllOrganizations() {
         return this.organizationRepository.getAll();
+    }
+
+    async getOrganizationByIdentifier(identifier: string) {
+        console.log('identifier', identifier);
+        const uuidValidator = z.string().uuid();
+        const isUUID = uuidValidator.safeParse(identifier).success;
+        if (isUUID) {
+            const idResult = await this.organizationRepository.getById(identifier);
+            if (!idResult) {
+                throw new HttpError('Organization not found', 404);
+            }
+            return idResult;
+        }
+        const slugResult = await this.organizationRepository.getBySlug(identifier);
+        if (!slugResult) {
+            throw new HttpError('Organization not found', 404);
+        }
+        return slugResult;
+    }
+
+    async createOrganization(data: { name: string; slug: string; description?: string; password?: string; ownerId: string }) {
+        const { name, slug, description, password, ownerId } = data;
+        const hashedPassword = password ? await hashPassword(password) : undefined;
+        const organization = await this.organizationRepository.create({
+            id: uuidv4(),
+            name,
+            slug,
+            description,
+            password: hashedPassword,
+            ownerId,
+            active: true
+        });
+        return organization;
     }
 }

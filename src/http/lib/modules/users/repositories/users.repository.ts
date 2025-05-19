@@ -43,9 +43,9 @@ export class UserRepository implements UserRepositoryInterface {
     }
 
     async create(data: Omit<User, 'createdAt' | 'updatedAt' | 'active' | 'authenticated'>): Promise<PublicUser> {
+        const [result] = await db.insert(users).values(data).returning() as PublicUser[];
+        return result;
         try {
-            const [result] = await db.insert(users).values(data).returning() as PublicUser[];
-            return result;
         } catch (error) {
             if (error.code === '23505' && error.constraint === 'users_email_unique') {
                 throw new HttpError('User already exists', 409);
