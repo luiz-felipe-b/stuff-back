@@ -18,11 +18,6 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
-// Refresh token request body
-const RefreshTokenSchema = z.object({
-  refreshToken: z.string()
-});
-
 // Export route documentation
 export const authRouteDocs = {
   login: {
@@ -39,7 +34,6 @@ export const authRouteDocs = {
   logout: {
     description: 'Logout from an account',
     tags: ['auth'],
-    body: RefreshTokenSchema,
     response: {
       200: SuccessResponseSchema,
       400: ErrorResponseSchema,
@@ -52,7 +46,6 @@ export const authRouteDocs = {
   refreshToken: {
     description: 'Refresh the access token',
     tags: ['auth'],
-    body: RefreshTokenSchema,
     response: {
       200: TokenResponseSchema,
       400: ErrorResponseSchema,

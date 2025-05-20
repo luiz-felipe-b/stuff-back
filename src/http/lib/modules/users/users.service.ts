@@ -72,7 +72,6 @@ export class UserService {
         }
 
         const result = this.userRepository.create(newUser);
-        console.log(result);
         return result;
     }
 

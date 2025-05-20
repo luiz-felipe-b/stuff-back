@@ -92,42 +92,20 @@ export async function appSetup(app: FastifyInstance) {
         const authHeader = req.headers.authorization
         const authHeaderResult = authHeaderSchema.safeParse(authHeader);
 
-        if (!authHeaderResult.success) {
-            return reply.code(401).send({
-                error: 'Unauthorized',
-                message: 'Missing or invalid authorization header',
-                statusCode: 401,
-            });
+        if (authHeaderResult.success) {
+            const accessToken = authHeaderResult.data.split(' ')[1];
+
+            const accessResult = app.verifyToken(accessToken);
+
+            if (accessResult.valid !== false) {
+                req.user = accessResult;
+                return;
+            }
         }
 
-        const accessToken = authHeaderResult.data.split(' ')[1];
-
-        const accessResult = app.verifyToken(accessToken);
-
-        if (accessResult.valid !== false) {
-            req.user = accessResult;
-            return;
-        }
-
-        const refreshToken = req.cookies.refreshToken || req.headers['x-refresh-token'];
-        if (!refreshToken) {
-            return reply.code(401).send({
-                error: 'Unauthorized',
-                message: 'Missing refresh token',
-                statusCode: accessResult.error.code,
-            });
-        }
-
-        const refreshTokenValue = Array.isArray(refreshToken) ? refreshToken[0] : refreshToken;
-        const refreshResult = app.verifyToken(refreshTokenValue);
-        console.log(refreshResult)
-        if (refreshResult.valid === false) {
-            return reply.code(401).send({ error: 'Invalid refresh token' })
-        }
-
-        const newAccessToken = app.jwt.sign({ id: refreshResult.id }, { key: env.JWT_SECRET, expiresIn: '15m' });
-
-        reply.header('X-New-Access-Token', newAccessToken)
-        req.user = { id: refreshResult.id }
+        return reply.code(401).send({
+            error: 'Unauthorized',
+            message: 'Authentication token is missing',
+        });
     });
 }

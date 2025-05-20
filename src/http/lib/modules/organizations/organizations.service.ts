@@ -16,7 +16,6 @@ export class OrganizationService {
     }
 
     async getOrganizationByIdentifier(identifier: string) {
-        console.log('identifier', identifier);
         const uuidValidator = z.string().uuid();
         const isUUID = uuidValidator.safeParse(identifier).success;
         if (isUUID) {

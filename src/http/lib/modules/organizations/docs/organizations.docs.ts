@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { commonErrorResponses, commonSuccessResponses } from "../../../../../types/http/responses";
-import { publicOrganizationSchema } from "../organizations.schema";
+import { organizationSchema, publicOrganizationSchema } from "../organizations.schema";
 
 export const organizationRouteDocs = {
     getAllOrganizations: {
@@ -9,7 +9,7 @@ export const organizationRouteDocs = {
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Organizations found'),
-                data: z.array(publicOrganizationSchema)
+                data: z.array(organizationSchema)
             }).describe('Organizations found'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],

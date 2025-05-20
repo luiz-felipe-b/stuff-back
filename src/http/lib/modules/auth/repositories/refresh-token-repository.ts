@@ -3,6 +3,7 @@ import { RefreshTokenRepositoryInterface } from "./refresh-token-repository.inte
 import { refreshTokens } from "../../../../../db/schemas/refresh-tokens.schema";
 import { RefreshTokenSchema } from "../schemas/refresh-token.schema";
 import { eq, and } from "drizzle-orm";
+import { users } from "../../../../../db/schemas/users.schema";
 
 export class RefreshTokenRepository implements RefreshTokenRepositoryInterface {
     async saveRefreshToken(token: string, userId: string, expiresAt: Date): Promise<RefreshTokenSchema> {
@@ -12,6 +13,11 @@ export class RefreshTokenRepository implements RefreshTokenRepositoryInterface {
 
     async findRefreshToken(token: string): Promise<RefreshTokenSchema> {
         const [result] = await db.select().from(refreshTokens).where(and(eq(refreshTokens.token, token), (eq(refreshTokens.revoked, false)))).limit(1);
+        return result;
+    }
+
+    async findRefreshTokenWithUser(token: string): Promise<any> {
+        const [result] = await db.select().from(refreshTokens).leftJoin(users, eq(users.id, refreshTokens.userId)).where(eq(refreshTokens.token, token)).limit(1);
         return result;
     }
 

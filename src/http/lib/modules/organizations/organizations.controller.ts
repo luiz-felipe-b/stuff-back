@@ -45,11 +45,11 @@ export class OrganizationController extends Controller {
             return reply.code(400).send({ message: validatedHeader.error.errors[0].message });
         }
         const { authorization } = validatedHeader.data;
-        const decodedAuthorization = app.jwt.decode(authorization.split(' ')[1]);
+        const decodedAuthorization = app.jwt.decode(authorization.split(' ')[1]) as { id: string };
         if (!decodedAuthorization) {
             return reply.code(401).send({ message: 'Unauthorized' });
         }
-        const { userId } = decodedAuthorization as { userId: string };
+        const userId = decodedAuthorization.id;
 
         // Validate the request body
         const bodyValidation = z.object({

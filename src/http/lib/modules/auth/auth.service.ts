@@ -91,27 +91,27 @@ export class AuthService {
         if (!refreshTokenValidation.success) {
             throw new HttpError('Invalid token', 401);
         }
-        const { id } = refreshTokenValidation.data;
 
-        // Verificar se o usuário existe
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new HttpError('User not found', 404);
-        }
+        const { refresh_tokens: token, users: user } = await this.refreshTokenRepository.findRefreshTokenWithUser(refreshToken);
+        // // Verificar se o token existe
+        // const token = await this.refreshTokenRepository.findRefreshToken(refreshToken);
+        // if (!token || token.revoked) {
+        //     throw new HttpError('Invalid token', 401);
+        // }
 
-        // Verificar se o token existe
-        const token = await this.refreshTokenRepository.findRefreshToken(refreshToken);
-        if (!token || token.revoked) {
-            throw new HttpError('Invalid token', 401);
-        }
-
-        // Verificar se o token expirou
+        // // Verificar se o token expirou
         if (token.expiresAt < new Date()) {
             throw new HttpError('Token expired', 401);
         }
 
+        // // Verificar se o usuário existe
+        // const user = await this.userRepository.findById(id);
+        // if (!user) {
+        //     throw new HttpError('User not found', 404);
+        // }
+
         // Gerar novo token
-        const accessToken = app.jwt.sign({ id: token.userId }, { expiresIn: '15m' });
+        const accessToken = app.jwt.sign({ id: user.id }, { expiresIn: '15m' });
 
         return { accessToken };
     }
