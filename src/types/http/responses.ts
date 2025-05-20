@@ -4,8 +4,8 @@ import { z } from 'zod';
  * Standard error response schema
  */
 export const ErrorResponseSchema = z.object({
-  statusCode: z.number(),
-  error: z.string()
+  error: z.string(),
+  message: z.string(),
 });
 
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

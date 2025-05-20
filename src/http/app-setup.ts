@@ -98,7 +98,7 @@ export async function appSetup(app: FastifyInstance) {
             const accessResult = app.verifyToken(accessToken);
 
             if (accessResult.valid !== false) {
-                req.user = accessResult;
+                req.user = { id: accessResult.id, };
                 return;
             }
         }

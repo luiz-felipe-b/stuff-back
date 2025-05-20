@@ -8,6 +8,8 @@ import { FastifyRequest } from "fastify";
 import { env } from "../../../../env.ts";
 import { PasswordResetTokenRepository } from "./repositories/password-reset-token.repository.ts";
 import { EmailService } from "../../util/email/email.service.ts";
+import { generateAccessToken } from "../../util/tokens/generate-access-token.ts";
+import { generateRefreshToken } from "../../util/tokens/generate-refresh-token.ts";
 
 export class AuthService {
     constructor(private userRepository: UserRepository, private refreshTokenRepository: RefreshTokenRepository, private passwordResetTokenRepository: PasswordResetTokenRepository, private emailService: EmailService) {
@@ -38,8 +40,8 @@ export class AuthService {
         }
 
         // Gerar tokens
-        const accessToken = app.jwt.sign({ id: user.id }, { expiresIn: '15m' });
-        const refreshToken = app.jwt.sign({ id: user.id }, { expiresIn: '7d' });
+        const accessToken = generateAccessToken(app, {id: user.id, role: user.role});
+        const refreshToken = generateRefreshToken(app, {id: user.id});
         // Definir data de validade
         const tokenGenerationDate = new Date();
         const tokenExpirationDate = new Date(tokenGenerationDate);
@@ -111,7 +113,7 @@ export class AuthService {
         // }
 
         // Gerar novo token
-        const accessToken = app.jwt.sign({ id: user.id }, { expiresIn: '15m' });
+        const accessToken = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: '15m' });
 
         return { accessToken };
     }

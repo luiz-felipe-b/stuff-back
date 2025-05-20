@@ -20,7 +20,7 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
   }, organizationController.getOrganizationByIdentifier.bind(organizationController));
 
   app.post('/', {
-    // onRequest: [app.authenticate],
+    onRequest: [app.authenticate],
     schema: organizationRouteDocs.createOrganization,
     attachValidation: true
   }, organizationController.createOrganization.bind(organizationController));
