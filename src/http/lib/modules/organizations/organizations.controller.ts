@@ -13,14 +13,11 @@ export class OrganizationController extends Controller {
     }
 
     async getAllOrganizations(request:FastifyRequest, reply:FastifyReply) {
-        console.log(request);
-        console.log(request.user);
         return this.handleRequest(request, reply, async () => {
             const organizations = await this.organizationService.getAllOrganizations();
             return reply.code(200).send({ data: organizations, message: 'Organizations found' });
         });
     }
-    
 
     async getOrganizationByIdentifier(request:FastifyRequest, reply:FastifyReply) {
         return this.handleRequest(request, reply, async () => {

@@ -3,6 +3,7 @@ import { UserController } from "./user.controller.js";
 import { UserService } from "./users.service.js";
 import { FastifyTypedInstance } from "../../../../types/fastify-typed-instance.js";
 import { userRouteDocs } from "./docs/user.doc.js";
+import { authorizePermission } from "../../util/permission/authorize-permission.js";
 
 export async function userRoutes(app: FastifyTypedInstance) {
     const userRepository = new UserRepository();
@@ -11,18 +12,20 @@ export async function userRoutes(app: FastifyTypedInstance) {
 
     app.get('/', {
         onRequest: [app.authenticate],
+        preHandler: [authorizePermission(['admin', 'moderator'])],
         schema: userRouteDocs.getAllUsers
     }, userController.getAllUsers.bind(userController));
 
-    app.get('/:id', {
+    app.get('/:identifier', {
         onRequest: [app.authenticate],
-        schema: userRouteDocs.getUserById
-    }, userController.getUserById.bind(userController));
+        preHandler: [authorizePermission(['admin', 'moderator'])],
+        schema: userRouteDocs.getUserByIdentifier
+    }, userController.getUserByIdentifier.bind(userController));
 
-    app.get('/email/:email', {
-        onRequest: [app.authenticate],
-        schema: userRouteDocs.getUserByEmail
-    }, userController.getUserByEmail.bind(userController));
+    // app.get('/email/:email', {
+    //     onRequest: [app.authenticate],
+    //     schema: userRouteDocs.getUserByEmail
+    // }, userController.getUserByEmail.bind(userController));
 
     app.get('/me', {
         onRequest: [app.authenticate],

@@ -29,27 +29,27 @@ export const userRouteDocs = {
     security: [{ bearerAuth: [] }],
   },
 
-  getUserByEmail: {
-    description: "Get user by their email",
-    tags: ["user"],
-    response: {
-      200: commonSuccessResponses[200]
-        .extend({
-          message: z.string().default("User found"),
-          data: publicUserSchema,
-        })
-        .describe("User found"),
-      404: commonErrorResponses[404].describe("User not found"),
-      400: commonErrorResponses[400]
-        .extend({ error: z.string().default("Invalid email") })
-        .describe("Invalid email"),
-      500: commonErrorResponses[500],
-    },
-    security: [{ bearerAuth: [] }],
-  },
+  // getUserByEmail: {
+  //   description: "Get user by their email",
+  //   tags: ["user"],
+  //   response: {
+  //     200: commonSuccessResponses[200]
+  //       .extend({
+  //         message: z.string().default("User found"),
+  //         data: publicUserSchema,
+  //       })
+  //       .describe("User found"),
+  //     404: commonErrorResponses[404].describe("User not found"),
+  //     400: commonErrorResponses[400]
+  //       .extend({ error: z.string().default("Invalid email") })
+  //       .describe("Invalid email"),
+  //     500: commonErrorResponses[500],
+  //   },
+  //   security: [{ bearerAuth: [] }],
+  // },
 
-  getUserById: {
-    description: "Get user by ID",
+  getUserByIdentifier: {
+    description: "Get user by an identifier (ID or email)",
     tags: ["user"],
     params: userIdParamSchema,
     response: {

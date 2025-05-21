@@ -34,6 +34,7 @@ export class OrganizationService {
 
     async createOrganization(data: { name: string; slug: string; description?: string; password?: string; ownerId: string }) {
         const { name, slug, description, password, ownerId } = data;
+        if (z.string().uuid().safeParse(slug).success) throw new HttpError('Slug cannot be a UUID', 400);
         const hashedPassword = password ? await hashPassword(password) : undefined;
         const organization = await this.organizationRepository.create({
             id: uuidv4(),

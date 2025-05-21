@@ -113,7 +113,7 @@ export class AuthService {
         // }
 
         // Gerar novo token
-        const accessToken = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: '15m' });
+        const accessToken = generateAccessToken(app, { id: user.id, role: user.role });
 
         return { accessToken };
     }

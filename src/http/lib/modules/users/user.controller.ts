@@ -14,63 +14,44 @@ export class UserController extends Controller {
         this.userService = userService;
     }
 
-    async getUserById(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+    async getUserByIdentifier(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return await this.handleRequest(req, reply, async () => {
-            const paramsSchema = z.object({
-                id: z.string(),
+            const identififierValidation = z.object({
+                identifier: z.string({message: 'Identifier needs to be a string'}).min(1, { message: 'Identifier is required' })
             });
+            const validatedIdentifier = identififierValidation.safeParse(req.params);
 
-            const params = paramsSchema.parse(req.params);
-            const { id } = params;
-            if (!id) {
-                throw new HttpError('User ID is required', 400);
+            if (!validatedIdentifier.success) {
+                return reply.code(400).send({ message: validatedIdentifier.error.errors[0].message });
             }
+            const { identifier } = validatedIdentifier.data;
 
-            const user = await this.userService.getUserById(id);
+            const user = await this.userService.getUserByIdentifier(identifier);
             return reply.code(200).send({ data: user, message: 'User found' });
         });
     }
 
-    async getUserByEmail(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
-        return this.handleRequest(req, reply, async () => {
-            const paramsSchema = z.object({
-                email: z.string().email(),
-            })
+    // async getUserByEmail(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+    //     return this.handleRequest(req, reply, async () => {
+    //         const paramsSchema = z.object({
+    //             email: z.string().email(),
+    //         })
     
-            const params = paramsSchema.safeParse(req.params);
-            if (params.success === false) {
-                throw new HttpError('Invalid email', 400);
-            }
-            const { email } = params.data;
+    //         const params = paramsSchema.safeParse(req.params);
+    //         if (params.success === false) {
+    //             throw new HttpError('Invalid email', 400);
+    //         }
+    //         const { email } = params.data;
 
-            const user = await this.userService.getUserByEmail(email);
+    //         const user = await this.userService.getUserByEmail(email);
 
-            return reply.code(200).send({ data: user, message: 'User found' });
-        });
-    }
+    //         return reply.code(200).send({ data: user, message: 'User found' });
+    //     });
+    // }
 
     async getMe(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
-            const cookiesSchema = z.object({
-                refreshToken: z.string(),
-            });
-            const validated = cookiesSchema.safeParse(req.cookies);
-            if (!validated.success) {
-                throw new HttpError('Missing or invalid refresh token', 400);
-            }
-
-            const { refreshToken } = validated.data;
-            const decodedToken = app.jwt.decode(refreshToken);
-
-            if (!decodedToken) {
-                throw new HttpError('Invalid refresh token', 401);
-            }
-            const { id } = decodedToken as { id: string };
-            if (!id) {
-                throw new HttpError('User ID is required', 400);
-            }
-    
-            const user = await this.userService.getUserById(id);
+            const user = await this.userService.getUserByIdentifier(req.user.id);
             return reply.code(200).send({ data: user, message: 'User found' });
         });
     }

@@ -11,6 +11,7 @@ import cors from '@fastify/cors'
 
 const tokenPayloadSchema = z.object({
     id: z.string(),
+    role: z.enum(['admin', 'moderator', 'user']),
 })
 
 export type TokenPayload = z.infer<typeof tokenPayloadSchema>;
@@ -80,7 +81,7 @@ export async function appSetup(app: FastifyInstance) {
             if (!result.success) {
                 return { valid: false, error: { code: 'INVALID_TOKEN_PAYLOAD', details: result.error } }
             }
-            return { valid: true, id: result.data.id }
+            return { valid: true, id: result.data.id, role: result.data.role }
         } catch (error) {
             return { valid: false, error }
         }
@@ -98,14 +99,14 @@ export async function appSetup(app: FastifyInstance) {
             const accessResult = app.verifyToken(accessToken);
 
             if (accessResult.valid !== false) {
-                req.user = { id: accessResult.id, };
+                req.user = { id: accessResult.id, role: accessResult.role };
                 return;
             }
         }
 
         return reply.code(401).send({
             error: 'Unauthorized',
-            message: 'Authentication token is missing',
+            message: 'Authentication token is missing or not valid',
         });
     });
 }

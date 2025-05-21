@@ -17,16 +17,30 @@ export class UserService {
     constructor(private userRepository: UserRepository) {}
 
     /**
-     * Obtém um usuário pelo ID
+     * Obtém um usuário por um identificador (ID ou email)
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserById(id: string): Promise<PublicUser | null> {
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new HttpError('User not found', 404);
+    async getUserByIdentifier(identifier: string): Promise<PublicUser | null> {
+        const uuidValidator = z.string().uuid();
+        const isUUID = uuidValidator.safeParse(identifier).success;
+        if (isUUID) {
+            const idResult = await this.userRepository.findById(identifier);
+            if (!idResult) {
+                throw new HttpError('User not found', 404);
+            }
+            return idResult;
         }
-        return user;
+        const emailValidator = z.string().email();
+        const isEmail = emailValidator.safeParse(identifier).success;
+        if (isEmail) {
+            const emailResult = await this.userRepository.findByEmail(identifier);
+            if (!emailResult) {
+                throw new HttpError('User not found', 404);
+            }
+            return emailResult;
+        }
+        throw new HttpError('Invalid identifier', 400);
     }
 
     /**
@@ -34,13 +48,13 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserByEmail(email: string): Promise<PublicUser | null> {
-        const user = await this.userRepository.findByEmail(email);
-        if (!user) {
-            throw new HttpError('User not found', 404);
-        }
-        return user;
-    }
+    // async getUserByEmail(email: string): Promise<PublicUser | null> {
+    //     const user = await this.userRepository.findByEmail(email);
+    //     if (!user) {
+    //         throw new HttpError('User not found', 404);
+    //     }
+    //     return user;
+    // }
     
 
     /**
