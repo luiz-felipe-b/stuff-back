@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const accessTokenSchema = z.object({
     id: z.string().uuid(),
+    email: z.string().email(),
     role: z.enum(['admin', 'moderator', 'user']),
 });
 export type AccessTokenPayload = z.infer<typeof accessTokenSchema>;

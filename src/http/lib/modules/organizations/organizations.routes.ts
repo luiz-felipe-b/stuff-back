@@ -1,4 +1,5 @@
 import { FastifyTypedInstance } from "../../../../types/fastify-typed-instance";
+import { authorizeUserAccess } from "../../util/permission/authorize-permission";
 import { organizationRouteDocs } from "./docs/organizations.docs";
 import { OrganizationController } from "./organizations.controller";
 import { OrganizationRepository } from "./organizations.repository";
@@ -11,6 +12,7 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
 
   app.get('/', {
     onRequest: [app.authenticate],
+    preHandler: [authorizeUserAccess(['admin'])],
     schema: organizationRouteDocs.getAllOrganizations
   }, organizationController.getAllOrganizations.bind(organizationController));
 

@@ -4,7 +4,7 @@ import {
   publicUserSchema,
   updatePasswordSchema,
   updateUserSchema,
-  userIdParamSchema,
+  userIdentifierParamSchema,
 } from "../user.schema";
 import {
   commonErrorResponses,
@@ -51,7 +51,7 @@ export const userRouteDocs = {
   getUserByIdentifier: {
     description: "Get user by an identifier (ID or email)",
     tags: ["user"],
-    params: userIdParamSchema,
+    params: userIdentifierParamSchema,
     response: {
       200: commonSuccessResponses[200]
         .extend({
@@ -88,7 +88,7 @@ export const userRouteDocs = {
   updateUser: {
     description: "Update a user by ID",
     tags: ["user"],
-    params: userIdParamSchema,
+    params: userIdentifierParamSchema,
     body: updateUserSchema,
     response: {
       200: commonSuccessResponses[200]
@@ -157,7 +157,7 @@ export const userRouteDocs = {
   deleteUser: {
     description: "Delete a user by ID",
     tags: ["user"],
-    params: userIdParamSchema,
+    params: userIdentifierParamSchema,
     response: {
       200: commonSuccessResponses[200]
         .extend({

@@ -8,13 +8,7 @@ import { env } from "../env";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
 import cors from '@fastify/cors'
-
-const tokenPayloadSchema = z.object({
-    id: z.string(),
-    role: z.enum(['admin', 'moderator', 'user']),
-})
-
-export type TokenPayload = z.infer<typeof tokenPayloadSchema>;
+import { requestUserSchema } from "../types/http/requests";
 
 export async function appSetup(app: FastifyInstance) {
     app.register(fastifyJwt, {
@@ -77,11 +71,11 @@ export async function appSetup(app: FastifyInstance) {
     app.decorate('verifyToken', (token: string) => {
         try {
             const decoded = app.jwt.verify(token, { key: env.JWT_SECRET });
-            const result = tokenPayloadSchema.safeParse(decoded);
+            const result = requestUserSchema.safeParse(decoded);
             if (!result.success) {
                 return { valid: false, error: { code: 'INVALID_TOKEN_PAYLOAD', details: result.error } }
             }
-            return { valid: true, id: result.data.id, role: result.data.role }
+            return { valid: true, id: result.data.id, email: result.data.email, role: result.data.role }
         } catch (error) {
             return { valid: false, error }
         }
@@ -99,7 +93,7 @@ export async function appSetup(app: FastifyInstance) {
             const accessResult = app.verifyToken(accessToken);
 
             if (accessResult.valid !== false) {
-                req.user = { id: accessResult.id, role: accessResult.role };
+                req.user = { id: accessResult.id, email: accessResult.email, role: accessResult.role };
                 return;
             }
         }

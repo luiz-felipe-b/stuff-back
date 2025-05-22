@@ -1,13 +1,34 @@
-import { error } from "console";
 import { FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
 
-export function authorizePermission(allowedRoles: string[]): (request: FastifyRequest, reply: FastifyReply, done: () => void) => FastifyReply | void {
+export function authorizeUserAccess(allowedRoles?: string[]): (request: FastifyRequest, reply: FastifyReply, done: () => void) => FastifyReply | void {
     return function (request: FastifyRequest, reply: FastifyReply, done: () => void) {
-        const userRole = request.user.role;
-        const hasPermission = userRole && allowedRoles.includes(userRole);
-        if (!hasPermission) {
-            return reply.code(403).send({ error: 'Forbidden', message: 'You do not have permission to access this resource' });
+
+        if (!allowedRoles) {
+            return done();
         }
-        done();
+        
+        const userRole = request.user.role;
+        const rolePermission = (userRole && allowedRoles.includes(userRole));
+        console.log('userRole', userRole);
+        console.log('allowedRoles', allowedRoles);
+        console.log('rolePermission', rolePermission);
+        if (rolePermission) {
+            return done();
+        }
+
+        // Pega o ID do usuário autenticado
+        const userId = request.user.id;
+        const paramsValidator = z.object({
+            identifier: z.string().uuid({ message: 'Invalid user ID' }),
+        });
+        const paramsId = paramsValidator.safeParse(request.params).data?.identifier;
+        const selfPermission = userId === paramsId
+
+        if (selfPermission) {
+            return done();
+        }
+        
+        reply.code(403).send({ error: 'Forbidden', message: 'You do not have permission to access this resource' });
     };
 }

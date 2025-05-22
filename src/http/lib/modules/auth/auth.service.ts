@@ -40,7 +40,7 @@ export class AuthService {
         }
 
         // Gerar tokens
-        const accessToken = generateAccessToken(app, {id: user.id, role: user.role});
+        const accessToken = generateAccessToken(app, {id: user.id, email: user.email, role: user.role});
         const refreshToken = generateRefreshToken(app, {id: user.id});
         // Definir data de validade
         const tokenGenerationDate = new Date();
@@ -113,7 +113,7 @@ export class AuthService {
         // }
 
         // Gerar novo token
-        const accessToken = generateAccessToken(app, { id: user.id, role: user.role });
+        const accessToken = generateAccessToken(app, { id: user.id, email: user.email, role: user.role });
 
         return { accessToken };
     }

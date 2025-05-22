@@ -24,6 +24,8 @@ export class UserService {
     async getUserByIdentifier(identifier: string): Promise<PublicUser | null> {
         const uuidValidator = z.string().uuid();
         const isUUID = uuidValidator.safeParse(identifier).success;
+        console.log('identifier', identifier);
+        console.log('isUUID', isUUID);
         if (isUUID) {
             const idResult = await this.userRepository.findById(identifier);
             if (!idResult) {

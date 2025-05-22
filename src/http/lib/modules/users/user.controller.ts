@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { PublicUser, refreshTokenSchema, updateUserSchema, User, userIdParamSchema } from "./user.schema.ts";
+import { PublicUser, refreshTokenSchema, updateUserSchema, User, userIdentifierParamSchema } from "./user.schema.ts";
 import { UserService } from "./users.service.ts";
 import { Controller } from "../../common/controllers/controller";
 import { z } from "zod";
@@ -25,6 +25,7 @@ export class UserController extends Controller {
                 return reply.code(400).send({ message: validatedIdentifier.error.errors[0].message });
             }
             const { identifier } = validatedIdentifier.data;
+            console.log('identifier', validatedIdentifier.data);
 
             const user = await this.userService.getUserByIdentifier(identifier);
             return reply.code(200).send({ data: user, message: 'User found' });
@@ -89,7 +90,7 @@ export class UserController extends Controller {
 
     async updateUser(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
-            const params = userIdParamSchema.safeParse(req.params);
+            const params = userIdentifierParamSchema.safeParse(req.params);
             if (!params.success) {
                 throw new HttpError('Missing user ID', 400);
             }
@@ -99,7 +100,7 @@ export class UserController extends Controller {
                 throw new HttpError('Missing or invalid parameters', 400);
             }
 
-            await this.userService.updateUser(params.data.id, body.data);
+            await this.userService.updateUser(params.data.identifier, body.data);
             return reply.code(200).send({ message: 'User updated' });
         });
     }
@@ -168,13 +169,13 @@ export class UserController extends Controller {
 
     async deleteUser(req: FastifyRequest, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
-            const params = userIdParamSchema.safeParse(req.params);
+            const params = userIdentifierParamSchema.safeParse(req.params);
             if (!params.success) {
                 throw new HttpError('Missing user ID', 400);
             }
-            const { id } = params.data;
+            const { identifier } = params.data;
 
-            const user = await this.userService.deleteUser(id);
+            const user = await this.userService.deleteUser(identifier);
             return reply.code(200).send({ data: user, message: 'User deleted' });
         });
     }
