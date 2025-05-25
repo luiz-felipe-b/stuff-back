@@ -9,11 +9,11 @@ export const userRoles = pgEnum('user_types', ['admin', 'moderator', 'user']);
 
 export const userTiers = pgEnum('user_tiers', ['free', 'plus', 'pro', 'enterprise']);
 
-const columns: AnyType<User> = {
+const columns = {
     id: text('id').$defaultFn(() => uuidv4()).primaryKey(),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
-    userName: text('user_name').unique().$defaultFn(() => {
+    userName: text('user_name').unique().notNull().$defaultFn(() => {
         return 'user_' + Math.random().toString(36).substring(2, 8);
     }),
     email: text('email').notNull().unique(),

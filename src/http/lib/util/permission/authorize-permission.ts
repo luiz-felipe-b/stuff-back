@@ -5,14 +5,13 @@ export function authorizeUserAccess(allowedRoles?: string[]): (request: FastifyR
     return function (request: FastifyRequest, reply: FastifyReply, done: () => void) {
 
         if (!allowedRoles) {
+            reply.code(403).send({ error: 'Forbidden', message: 'You do not have permission to access this resource' });
             return done();
         }
         
         const userRole = request.user.role;
         const rolePermission = (userRole && allowedRoles.includes(userRole));
-        console.log('userRole', userRole);
-        console.log('allowedRoles', allowedRoles);
-        console.log('rolePermission', rolePermission);
+
         if (rolePermission) {
             return done();
         }
@@ -30,5 +29,6 @@ export function authorizeUserAccess(allowedRoles?: string[]): (request: FastifyR
         }
         
         reply.code(403).send({ error: 'Forbidden', message: 'You do not have permission to access this resource' });
+        return done();
     };
 }

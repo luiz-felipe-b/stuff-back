@@ -10,11 +10,15 @@ import { PasswordResetTokenRepository } from "./repositories/password-reset-toke
 import { EmailService } from "../../util/email/email.service.ts";
 import { generateAccessToken } from "../../util/tokens/generate-access-token.ts";
 import { generateRefreshToken } from "../../util/tokens/generate-refresh-token.ts";
+import { db } from "../../../../db/connection.ts";
 
 export class AuthService {
-    constructor(private userRepository: UserRepository, private refreshTokenRepository: RefreshTokenRepository, private passwordResetTokenRepository: PasswordResetTokenRepository, private emailService: EmailService) {
-
-    }
+    constructor(
+        private userRepository: UserRepository, 
+        private refreshTokenRepository: RefreshTokenRepository, 
+        private passwordResetTokenRepository: PasswordResetTokenRepository, 
+        private emailService: EmailService
+    ) {}
 
     async login(req: FastifyRequest): Promise<{ accessToken: string; refreshToken: string }> {
         const requestSchema = z.object({
@@ -40,8 +44,8 @@ export class AuthService {
         }
 
         // Gerar tokens
-        const accessToken = generateAccessToken(app, {id: user.id, email: user.email, role: user.role});
-        const refreshToken = generateRefreshToken(app, {id: user.id});
+        const accessToken = generateAccessToken(app, { id: user.id, email: user.email, role: user.role });
+        const refreshToken = generateRefreshToken(app, { id: user.id });
         // Definir data de validade
         const tokenGenerationDate = new Date();
         const tokenExpirationDate = new Date(tokenGenerationDate);
@@ -134,7 +138,7 @@ export class AuthService {
         }
         // Gerar token de redefinição de senha
         const resetToken = app.jwt.sign({ id: user.id }, { expiresIn: '1h' });
-        
+
         await this.emailService.sendEmail({
             subject: '🔒 Password Reset Request',
             htmlContent: `<p>Here's your password reset token ${resetToken}</p>`,
@@ -156,7 +160,7 @@ export class AuthService {
             token: z.string(),
             newPassword: z.string(),
         });
-        const validation = requestSchema.safeParse(req.headers);
+        const validation = requestSchema.safeParse(req.body);
         if (!validation.success) {
             throw new HttpError('Missing or invalid parameters', 400);
         }
@@ -165,30 +169,48 @@ export class AuthService {
         const jwtSchema = z.object({
             id: z.string(),
         });
+
         const decodedTokenValidation = jwtSchema.safeParse(app.jwt.verify(token));
         if (!decodedTokenValidation.success) {
             throw new HttpError('Invalid token', 401);
         }
-        const checkToken = await this.passwordResetTokenRepository.findPasswordResetToken(token);
-        if (!checkToken || checkToken.revoked || checkToken.expiresAt < new Date()) {
-            throw new HttpError('Invalid token', 401);
-        }
-        const { id } = decodedTokenValidation.data;
+        // const checkToken = await this.passwordResetTokenRepository.findPasswordResetToken(token);
+        // if (!checkToken || checkToken.revoked || checkToken.expiresAt < new Date()) {
+        //     throw new HttpError('Invalid token', 401);
+        // }
+        // const { id } = decodedTokenValidation.data;
 
-        // Verificar se o usuário existe
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new HttpError('User not found', 404);
-        }
+        // // Verificar se o usuário existe
+        // const user = await this.userRepository.findById(id);
+        // if (!user) {
+        //     throw new HttpError('User not found', 404);
+        // }
+
+        const { userId, revoked, expiresAt } = await this.passwordResetTokenRepository.findPasswordResetTokenWithUser(token);
+
+        if (!userId) throw new HttpError('User does not exist', 404);
+
+        const now = new Date();
+        if (revoked || expiresAt < now) throw new HttpError('Invalid token', 401);
 
         // Criar hash da nova senha
         const password = await hashPassword(newPassword);
 
-        // Revogar o token
-        await this.passwordResetTokenRepository.revokePasswordResetToken(token);
+        await db.transaction(async (tx) => {
+            const passwordResetTokenRepository = new PasswordResetTokenRepository(tx);
+            const userRepository = new UserRepository(tx);
+            
+            // Revogar o token
+            await passwordResetTokenRepository.revokePasswordResetToken(token);
+            // Atualizar senha
+            await userRepository.update({ id: userId, password });
+        });
 
-        // Atualizar senha
-        await this.userRepository.update({ id: user.id, password });
+        // // Revogar o token
+        // await this.passwordResetTokenRepository.revokePasswordResetToken(token);
+
+        // // Atualizar senha
+        // await this.userRepository.update({ id: userId, password });
     }
 
 }

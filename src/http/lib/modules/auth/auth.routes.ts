@@ -7,11 +7,12 @@ import { z } from "zod";
 import { PasswordResetTokenRepository } from "./repositories/password-reset-token.repository.js";
 import { EmailService } from "../../util/email/email.service.js";
 import { authRouteDocs } from "./docs/auth.doc.js";
+import { db } from "../../../../db/connection.js";
 
 export async function authRoutes(app: FastifyTypedInstance) {
     const refreshTokenRepository = new RefreshTokenRepository();
-    const userRepository = new UserRepository();
-    const passwordResetTokenRepository = new PasswordResetTokenRepository();
+    const userRepository = new UserRepository(db);
+    const passwordResetTokenRepository = new PasswordResetTokenRepository(db);
     const emailService = new EmailService();
     const authService = new AuthService(userRepository, refreshTokenRepository, passwordResetTokenRepository, emailService);
     const authController = new AuthController(authService);

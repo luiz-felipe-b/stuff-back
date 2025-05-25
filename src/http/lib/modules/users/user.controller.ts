@@ -25,7 +25,6 @@ export class UserController extends Controller {
                 return reply.code(400).send({ message: validatedIdentifier.error.errors[0].message });
             }
             const { identifier } = validatedIdentifier.data;
-            console.log('identifier', validatedIdentifier.data);
 
             const user = await this.userService.getUserByIdentifier(identifier);
             return reply.code(200).send({ data: user, message: 'User found' });
