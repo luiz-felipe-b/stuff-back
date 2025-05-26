@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { commonErrorResponses, commonSuccessResponses } from "../../../../../types/http/responses";
-import { organizationSchema, publicOrganizationSchema } from "../organizations.schema";
+import { organizationIdParamSchema, organizationSchema, publicOrganizationSchema, updateOrganizationSchema } from "../organizations.schema";
 
 export const organizationRouteDocs = {
     getAllOrganizations: {
@@ -65,11 +65,36 @@ export const organizationRouteDocs = {
 
     updateOrganization: {
         description: 'Update organization',
-        tags: ['organizations', 'to-do'],
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        body: updateOrganizationSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization updated successfully'),
+                data: publicOrganizationSchema
+            }).describe('Organization updated successfully'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
     },
 
     deleteOrganization: {
         description: 'Delete organization',
-        tags: ['organizations', 'to-do'],
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization deleted successfully'),
+                data: z.string().optional()
+            }).describe('Organization deleted successfully'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
     }
 }

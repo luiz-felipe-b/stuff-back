@@ -6,7 +6,7 @@ import { Database, Transaction } from "../../../../types/db/database";
 
 export class OrganizationRepository {
    constructor(
-      private readonly db: Database | Transaction = db
+      private readonly db: Database | Transaction
    ) {}
 
    async getAll(): Promise<PublicOrganization[]> {
@@ -31,6 +31,11 @@ export class OrganizationRepository {
 
    async update(data: Partial<PublicOrganization>): Promise<PublicOrganization> {
       const [result] = await this.db.update(organizations).set(data).where(eq(organizations.id, data.id)).returning() as PublicOrganization[];
+      return result;
+   }
+
+   async delete(id: string): Promise<PublicOrganization | null> {
+      const [result] = await this.db.delete(organizations).where(eq(organizations.id, id)).returning() as PublicOrganization[];
       return result;
    }
 

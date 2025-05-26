@@ -3,6 +3,7 @@ import { Controller } from "../../common/controllers/controller";
 import { OrganizationService } from "./organizations.service";
 import { z } from "zod";
 import app from "../../../app";
+import { organizationIdentifierParamSchema, organizationIdParamSchema, updateOrganizationSchema } from "./organizations.schema";
 
 export class OrganizationController extends Controller {
     private organizationService: OrganizationService;
@@ -35,21 +36,6 @@ export class OrganizationController extends Controller {
     }
 
     async createOrganization(request:FastifyRequest, reply:FastifyReply) {
-        // Validate the request headers
-        const headerValidation = z.object({
-            authorization: z.string({ message: 'Authorization header is required' }).min(1, { message: 'Authorization header is required' })
-        });
-        const validatedHeader = headerValidation.safeParse(request.headers);
-        if (!validatedHeader.success) {
-            return reply.code(400).send({ message: validatedHeader.error.errors[0].message });
-        }
-        const { authorization } = validatedHeader.data;
-        const decodedAuthorization = app.jwt.decode(authorization.split(' ')[1]) as { id: string };
-        if (!decodedAuthorization) {
-            return reply.code(401).send({ message: 'Unauthorized' });
-        }
-        const userId = decodedAuthorization.id;
-
         // Validate the request body
         const bodyValidation = z.object({
             name: z.string({ message: 'Name is required' }).min(1, { message: 'Name is required' }),
@@ -63,16 +49,28 @@ export class OrganizationController extends Controller {
         }
         const result = await this.organizationService.createOrganization({
             ...validatedBody.data,
-            ownerId: userId,
+            ownerId: request.user.id,
         });
         return result;
     }
 
     async updateOrganization(request:FastifyRequest, reply:FastifyReply) {
-        return;
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) return reply.code(400).send({ message: params.error.errors[0].message });
+        const body = updateOrganizationSchema.safeParse(request.body);
+        if (!body.success) return reply.code(400).send({ message: body.error.errors[0].message });
+        const { id } = params.data;
+        const updatedOrganization = await this.organizationService.updateOrganization(id, body.data);
+        if (!updatedOrganization) return reply.code(404).send({ message: 'Organization not found' });
+        return reply.code(200).send({ data: updatedOrganization, message: 'Organization updated successfully' });
     }
 
     async deleteOrganization(request:FastifyRequest, reply:FastifyReply) {
-        return;
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) return reply.code(400).send({ message: params.error.errors[0].message });
+        const { id } = params.data;
+        const deletedOrganization = await this.organizationService.deleteOrganization(id);
+        if (!deletedOrganization) return reply.code(404).send({ message: 'Organization not found' });
+        return reply.code(200).send({ message: 'Organization deleted successfully' });
     }
 }
