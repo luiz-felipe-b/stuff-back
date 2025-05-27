@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { HttpError } from "../../util/errors/http-error";
+import { HttpError } from "../../util/errors/http.error";
 
 export class Controller {
     public async handleRequest(req: FastifyRequest, reply: FastifyReply, callback: (req: FastifyRequest, reply: FastifyReply) => Promise<FastifyReply>): Promise<FastifyReply> {

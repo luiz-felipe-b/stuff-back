@@ -4,6 +4,8 @@ import { OrganizationService } from "./organizations.service";
 import { z } from "zod";
 import app from "../../../app";
 import { organizationIdentifierParamSchema, organizationIdParamSchema, updateOrganizationSchema } from "./organizations.schema";
+import { BadRequestError } from "../../util/errors/bad-request.error";
+import { NotFoundError } from "../../util/errors/not-found.error";
 
 export class OrganizationController extends Controller {
     private organizationService: OrganizationService;
@@ -26,9 +28,7 @@ export class OrganizationController extends Controller {
                 identifier: z.string({message: 'Identifier needs to be a string'}).min(1, { message: 'Identifier is required' })
             })
             const validatedIdentifier = identififierValidation.safeParse(request.params);
-            if (!validatedIdentifier.success) {
-                return reply.code(400).send({ message: validatedIdentifier.error.errors[0].message });
-            }
+            if (!validatedIdentifier.success) throw new BadRequestError(validatedIdentifier.error.errors[0].message);
             const { identifier } = validatedIdentifier.data;
             const organization = await this.organizationService.getOrganizationByIdentifier(identifier);
             return reply.code(200).send({ data: organization, message: 'Organization found' });
@@ -44,9 +44,7 @@ export class OrganizationController extends Controller {
             password: z.string().optional(),
         });
         const validatedBody = bodyValidation.safeParse(request.body);
-        if (!validatedBody.success) {
-            return reply.code(400).send({ message: validatedBody.error.errors[0].message });
-        }
+        if (!validatedBody.success) throw new BadRequestError(validatedBody.error.errors[0].message);
         const result = await this.organizationService.createOrganization({
             ...validatedBody.data,
             ownerId: request.user.id,
@@ -56,21 +54,26 @@ export class OrganizationController extends Controller {
 
     async updateOrganization(request:FastifyRequest, reply:FastifyReply) {
         const params = organizationIdParamSchema.safeParse(request.params);
-        if (!params.success) return reply.code(400).send({ message: params.error.errors[0].message });
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+
         const body = updateOrganizationSchema.safeParse(request.body);
-        if (!body.success) return reply.code(400).send({ message: body.error.errors[0].message });
+        if (!body.success) throw new BadRequestError(body.error.errors[0].message);
         const { id } = params.data;
+
         const updatedOrganization = await this.organizationService.updateOrganization(id, body.data);
-        if (!updatedOrganization) return reply.code(404).send({ message: 'Organization not found' });
+        if (!updatedOrganization) throw new NotFoundError('Organization not found', 404);
+
         return reply.code(200).send({ data: updatedOrganization, message: 'Organization updated successfully' });
     }
 
     async deleteOrganization(request:FastifyRequest, reply:FastifyReply) {
         const params = organizationIdParamSchema.safeParse(request.params);
-        if (!params.success) return reply.code(400).send({ message: params.error.errors[0].message });
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
         const { id } = params.data;
+        
         const deletedOrganization = await this.organizationService.deleteOrganization(id);
-        if (!deletedOrganization) return reply.code(404).send({ message: 'Organization not found' });
+
+        if (!deletedOrganization) throw new NotFoundError('Organization not found', 404);
         return reply.code(200).send({ message: 'Organization deleted successfully' });
     }
 }

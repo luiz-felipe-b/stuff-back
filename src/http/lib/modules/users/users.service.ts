@@ -2,10 +2,11 @@ import { CreateUserSchema, PublicUser, UpdateUserSchema, User } from "./user.sch
 import { UserRepository } from "./repositories/users.repository";
 import { z } from "zod";
 import { hashPassword } from "../../util/hash-password";
-import { HttpError } from "../../util/errors/http-error";
 import { FastifyRequest } from "fastify";
 import app from "../../../app";
 import { v4 as uuidv4 } from "uuid";
+import { NotFoundError } from "../../util/errors/not-found.error";
+import { BadRequestError } from "../../util/errors/bad-request.error";
 
 /**
  * Serviço de Usuário
@@ -27,7 +28,7 @@ export class UserService {
         if (isUUID) {
             const idResult = await this.userRepository.findById(identifier);
             if (!idResult) {
-                throw new HttpError('User not found', 404);
+                throw new NotFoundError('User not found');
             }
             return idResult;
         }
@@ -36,11 +37,11 @@ export class UserService {
         if (isEmail) {
             const emailResult = await this.userRepository.findByEmail(identifier);
             if (!emailResult) {
-                throw new HttpError('User not found', 404);
+                throw new NotFoundError('User not found');
             }
             return emailResult;
         }
-        throw new HttpError('Invalid identifier', 400);
+        throw new BadRequestError('Invalid identifier');
     }
 
     /**
@@ -94,9 +95,9 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User>
      */
-    async updateUser(id: string, data: UpdateUserSchema): Promise<void> {
+    async updateUser(id: string, data: UpdateUserSchema): Promise<Partial<User> | null> {
         if (Object.values(data).every(value => value === undefined)) {
-            throw new HttpError('No parameters to update', 400);
+            return null;
         }
 
         const updatedData = {
@@ -110,9 +111,8 @@ export class UserService {
         }
 
         const user = this.userRepository.update(updatedData);
-        if (!user) {
-            throw new HttpError('User not found', 404);
-        }
+
+        return user;
     }
 
     /**
@@ -181,7 +181,7 @@ export class UserService {
     async updatePasswordMe(id: string, passwordData: {newPassword: string, currentPassword:string}): Promise<PublicUser | null> {
         // Se todos os parametros estiverem indefinidos, lança um erro
         if (passwordData.newPassword === undefined || passwordData.currentPassword === undefined || passwordData.newPassword === '') {
-            throw new Error('No parameters to update');
+            return null;
         }
 
         // TODO: Verificar se a senha antiga está correta
@@ -207,7 +207,7 @@ export class UserService {
     async deleteUser(id: string): Promise<void> {
         const user = await this.userRepository.delete(id);
         if (!user) {
-            throw new HttpError('User not found', 404);
+            throw new NotFoundError('User not found');
         }
     }
 }

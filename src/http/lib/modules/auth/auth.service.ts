@@ -3,14 +3,15 @@ import { z } from "zod";
 import { hashPassword, verifyPassword } from "../../util/hash-password.js";
 import app from "../../../app.js";
 import { RefreshTokenRepository } from "./repositories/refresh-token-repository.js";
-import { HttpError } from "../../util/errors/http-error.js";
 import { FastifyRequest } from "fastify";
-import { env } from "../../../../env.ts";
 import { PasswordResetTokenRepository } from "./repositories/password-reset-token.repository.ts";
 import { EmailService } from "../../util/email/email.service.ts";
 import { generateAccessToken } from "../../util/tokens/generate-access-token.ts";
 import { generateRefreshToken } from "../../util/tokens/generate-refresh-token.ts";
 import { db } from "../../../../db/connection.ts";
+import { BadRequestError } from "../../util/errors/bad-request.error.ts";
+import { NotFoundError } from "../../util/errors/not-found.error.ts";
+import { UnauthorizedError } from "../../util/errors/unauthorized.error.ts";
 
 export class AuthService {
     constructor(
@@ -26,22 +27,16 @@ export class AuthService {
             password: z.string(),
         });
         const validation = requestSchema.safeParse(req.body);
-        if (!validation.success) {
-            throw new HttpError('Missing or invalid parameters', 400, 'Bad Request');
-        }
+        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
 
         const { email, password } = validation.data;
 
         // Verificar se o usuário existe
         const user = await this.userRepository.findByEmailWithPassword(email);
-        if (!user) {
-            throw new HttpError('User not found', 404, 'Not Found');
-        }
+        if (!user) throw new NotFoundError('User not found');
 
         // Verificar se a senha está correta
-        if (!(await verifyPassword(password, user.password))) {
-            throw new HttpError('Invalid credentials', 401, 'Unauthorized');
-        }
+        if (!(await verifyPassword(password, user.password))) throw new UnauthorizedError('Invalid credentials');
 
         // Gerar tokens
         const accessToken = generateAccessToken(app, { id: user.id, email: user.email, role: user.role });
@@ -50,10 +45,17 @@ export class AuthService {
         const tokenGenerationDate = new Date();
         const tokenExpirationDate = new Date(tokenGenerationDate);
         tokenExpirationDate.setDate(tokenExpirationDate.getDate() + 7);
-        // Salvar refresh token no banco de dados
-        await this.refreshTokenRepository.saveRefreshToken(refreshToken, user.id, tokenExpirationDate);
-        // Alterar o usuário para logado
-        await this.userRepository.update({ id: user.id, authenticated: true });
+        db.transaction(async (tx) => {
+            const refreshTokenRepository = new RefreshTokenRepository(tx);
+            const userRepository = new UserRepository(tx);
+
+            // Salvar refresh token no banco de dados
+            await refreshTokenRepository.saveRefreshToken(refreshToken, user.id, tokenExpirationDate);
+
+            // Alterar o usuário para logado
+            await userRepository.update({ id: user.id, authenticated: true });
+            }
+        );
 
         return { accessToken, refreshToken };
     }
@@ -64,17 +66,13 @@ export class AuthService {
         });
 
         const validation = requestSchema.safeParse(req.cookies);
-        if (!validation.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
-        }
+        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
 
         const { refreshToken } = validation.data;
 
         // Verificar se o token existe
         const token = await this.refreshTokenRepository.findRefreshToken(refreshToken);
-        if (!token || token.revoked) {
-            throw new HttpError('Invalid token', 401);
-        }
+        if (!token || token.revoked) throw new UnauthorizedError('Invalid token');
 
         await this.refreshTokenRepository.revokeRefreshToken(refreshToken);
         await this.userRepository.update({ id: token.userId, authenticated: false });
@@ -85,18 +83,14 @@ export class AuthService {
             refreshToken: z.string(),
         });
         const validation = requestSchema.safeParse(req.cookies);
-        if (!validation.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
-        }
+        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
 
         const jwtSchema = z.object({
             id: z.string(),
         });
         const { refreshToken } = validation.data;
         const refreshTokenValidation = jwtSchema.safeParse(app.jwt.verify(refreshToken));
-        if (!refreshTokenValidation.success) {
-            throw new HttpError('Invalid token', 401);
-        }
+        if (!refreshTokenValidation.success) throw new UnauthorizedError('Invalid token');
 
         const { refresh_tokens: token, users: user } = await this.refreshTokenRepository.findRefreshTokenWithUser(refreshToken);
         // // Verificar se o token existe
@@ -106,9 +100,7 @@ export class AuthService {
         // }
 
         // // Verificar se o token expirou
-        if (token.expiresAt < new Date()) {
-            throw new HttpError('Token expired', 401);
-        }
+        if (token.expiresAt < new Date()) throw new UnauthorizedError('Token expired');
 
         // // Verificar se o usuário existe
         // const user = await this.userRepository.findById(id);
@@ -127,15 +119,11 @@ export class AuthService {
             email: z.string().email(),
         });
         const validation = requestSchema.safeParse(req.body);
-        if (!validation.success) {
-            throw new HttpError('Password reset link sent to your email.', 200);
-        }
+        if (!validation.success) throw new BadRequestError('Email is required');
         const { email } = validation.data;
         // Verificar se o usuário existe
         const user = await this.userRepository.findByEmail(email);
-        if (!user) {
-            throw new HttpError('Password reset link sent to your email.', 200);
-        }
+        if (!user) return;
         // Gerar token de redefinição de senha
         const resetToken = app.jwt.sign({ id: user.id }, { expiresIn: '1h' });
 
@@ -161,9 +149,7 @@ export class AuthService {
             newPassword: z.string(),
         });
         const validation = requestSchema.safeParse(req.body);
-        if (!validation.success) {
-            throw new HttpError('Missing or invalid parameters', 400);
-        }
+        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
         const { token, newPassword } = validation.data;
 
         const jwtSchema = z.object({
@@ -171,9 +157,7 @@ export class AuthService {
         });
 
         const decodedTokenValidation = jwtSchema.safeParse(app.jwt.verify(token));
-        if (!decodedTokenValidation.success) {
-            throw new HttpError('Invalid token', 401);
-        }
+        if (!decodedTokenValidation.success) throw new UnauthorizedError('Invalid token');
         // const checkToken = await this.passwordResetTokenRepository.findPasswordResetToken(token);
         // if (!checkToken || checkToken.revoked || checkToken.expiresAt < new Date()) {
         //     throw new HttpError('Invalid token', 401);
@@ -188,10 +172,10 @@ export class AuthService {
 
         const { userId, revoked, expiresAt } = await this.passwordResetTokenRepository.findPasswordResetTokenWithUser(token);
 
-        if (!userId) throw new HttpError('User does not exist', 404);
+        if (!userId) throw new NotFoundError('User does not exist');
 
         const now = new Date();
-        if (revoked || expiresAt < now) throw new HttpError('Invalid token', 401);
+        if (revoked || expiresAt < now) throw new UnauthorizedError('Invalid token');
 
         // Criar hash da nova senha
         const password = await hashPassword(newPassword);

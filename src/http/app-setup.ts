@@ -99,7 +99,7 @@ export async function appSetup(app: FastifyInstance) {
         }
 
         return reply.code(401).send({
-            error: 'Unauthorized',
+            error: 'UnauthorizedError',
             message: 'Authentication token is missing or not valid',
         });
     });

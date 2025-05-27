@@ -3,8 +3,10 @@ import { PublicUser, refreshTokenSchema, updateUserSchema, User, userIdentifierP
 import { UserService } from "./users.service.ts";
 import { Controller } from "../../common/controllers/controller";
 import { z } from "zod";
-import { HttpError } from "../../util/errors/http-error";
 import app from "../../../app.ts";
+import { BadRequestError } from "../../util/errors/bad-request.error.ts";
+import { UnauthorizedError } from "../../util/errors/unauthorized.error.ts";
+import { NotFoundError } from "../../util/errors/not-found.error.ts";
 
 export class UserController extends Controller {
     private userService: UserService;
@@ -21,9 +23,8 @@ export class UserController extends Controller {
             });
             const validatedIdentifier = identififierValidation.safeParse(req.params);
 
-            if (!validatedIdentifier.success) {
-                return reply.code(400).send({ message: validatedIdentifier.error.errors[0].message });
-            }
+            if (!validatedIdentifier.success) throw new BadRequestError(validatedIdentifier.error.errors[0].message);
+
             const { identifier } = validatedIdentifier.data;
 
             const user = await this.userService.getUserByIdentifier(identifier);
@@ -79,7 +80,7 @@ export class UserController extends Controller {
             if (!validated.success) {
                 const errorFields = validated.error.errors.map(err => err.path.join('.'));
                 const missingFields = errorFields.join(', ');
-                throw new HttpError(`Missing or invalid parameters: ${missingFields}`, 400);
+                throw new BadRequestError(`Missing or invalid parameters: ${missingFields}`);
             }
 
             const user = await this.userService.createUser(validated.data);
@@ -90,14 +91,10 @@ export class UserController extends Controller {
     async updateUser(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
             const params = userIdentifierParamSchema.safeParse(req.params);
-            if (!params.success) {
-                throw new HttpError('Missing user ID', 400);
-            }
+            if (!params.success) throw new BadRequestError('Missing user ID');
 
             const body = updateUserSchema.safeParse(req.body);
-            if (!body.success) {
-                throw new HttpError('Missing or invalid parameters', 400);
-            }
+            if (!body.success) throw new BadRequestError('Missing or invalid parameters');
 
             await this.userService.updateUser(params.data.identifier, body.data);
             return reply.code(200).send({ message: 'User updated' });
@@ -108,19 +105,13 @@ export class UserController extends Controller {
         return this.handleRequest(req, reply, async () => {
             // Validando o token
             const validated = refreshTokenSchema.safeParse(req.cookies);
-            if (!validated.success) {
-                throw new HttpError('Authentication token missing', 401);
-            }
+            if (!validated.success) throw new UnauthorizedError('Authentication token missing');
             // Decodificando o token
             const decodedToken = app.jwt.decode(validated.data.refreshToken) as { id: string };
-            if (decodedToken === null || !decodedToken.id) {
-                throw new HttpError('Invalid refresh token', 401);
-            }
+            if (decodedToken === null || !decodedToken.id) throw new UnauthorizedError('Invalid refresh token');
             // Validando o corpo da requisição
             const body = updateUserSchema.safeParse(req.body);
-            if (!body.success) {
-                throw new HttpError('Missing or invalid parameters', 400);
-            }
+            if (!body.success) throw new BadRequestError('Missing or invalid parameters');
 
             await this.userService.updateUser(decodedToken.id, body.data);
             return reply.code(200).send({ message: 'User updated' });
@@ -131,15 +122,11 @@ export class UserController extends Controller {
         return this.handleRequest(req, reply, async () => {
             // Validando o token
             const validated = refreshTokenSchema.safeParse(req.cookies);
-            if (!validated.success) {
-                throw new HttpError('Authentication token missing', 401);
-            }
+            if (!validated.success) throw new UnauthorizedError('Authentication token missing');
             const { refreshToken } = validated.data;
             // Decodificando o token
             const decodedToken = app.jwt.verify(refreshToken) as { id: string };
-            if (decodedToken === null || !decodedToken.id) {
-                throw new HttpError('Invalid refresh token', 401);
-            }
+            if (decodedToken === null || !decodedToken.id) throw new UnauthorizedError('Invalid refresh token');
             const userId = decodedToken.id;
             // Validando o corpo da requisição
             const requestBodySchema = z.object({
@@ -147,9 +134,7 @@ export class UserController extends Controller {
                 currentPassword: z.string(),
             })
             const validatedBody = requestBodySchema.safeParse(req.body);
-            if (!validatedBody.success) {
-                throw new HttpError('Missing or invalid parameters', 400);
-            }
+            if (!validatedBody.success) throw new BadRequestError('Missing or invalid parameters');
             
             const passwordData = {
                 newPassword: validatedBody.data.newPassword,
@@ -158,9 +143,7 @@ export class UserController extends Controller {
             
             // Atualizando a senha
             const user = await this.userService.updatePasswordMe(userId, passwordData);
-            if (!user) {
-                throw new HttpError('User not found', 404);
-            }
+            if (!user) throw new NotFoundError('User not found');
 
             return reply.code(200).send({ message: 'Password updated' });
         });
@@ -170,7 +153,7 @@ export class UserController extends Controller {
         return this.handleRequest(req, reply, async () => {
             const params = userIdentifierParamSchema.safeParse(req.params);
             if (!params.success) {
-                throw new HttpError('Missing user ID', 400);
+                throw new BadRequestError('Missing user ID');
             }
             const { identifier } = params.data;
 

@@ -4,8 +4,11 @@ import { refreshTokens } from "../../../../../db/schemas/refresh-tokens.schema";
 import { RefreshTokenSchema } from "../schemas/refresh-token.schema";
 import { eq, and } from "drizzle-orm";
 import { users } from "../../../../../db/schemas/users.schema";
+import { Database, Transaction } from "../../../../../types/db/database";
 
 export class RefreshTokenRepository implements RefreshTokenRepositoryInterface {
+    constructor(private db: Database | Transaction) {}
+
     async saveRefreshToken(token: string, userId: string, expiresAt: Date): Promise<RefreshTokenSchema> {
         const [result] = await db.insert(refreshTokens).values({ token, userId, expiresAt }).returning();
         return result;

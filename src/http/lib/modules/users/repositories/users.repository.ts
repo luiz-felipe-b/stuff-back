@@ -2,7 +2,6 @@ import { PublicUser, User } from "../user.schema.ts";
 import { db } from "../../../../../db/connection";
 import { users } from "../../../../../db/schemas/users.schema.ts";
 import { eq } from "drizzle-orm";
-import { HttpError } from "../../../util/errors/http-error.ts";
 import { Database, Transaction } from "../../../../../types/db/database";
 
 export class UserRepository {
