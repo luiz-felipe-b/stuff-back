@@ -28,12 +28,22 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
   }, organizationController.createOrganization.bind(organizationController));
 
   app.patch('/:id', {
-    // onRequest: [app.authenticate],
+    onRequest: [app.authenticate],
     schema: organizationRouteDocs.updateOrganization
   }, organizationController.updateOrganization.bind(organizationController));
 
+  app.get('/:id/members', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.getOrganizationMembers
+  }, organizationController.getOrganizationMembers.bind(organizationController));
+
+  app.post('/:id/members', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.addOrganizationMember
+  }, organizationController.addOrganizationMember.bind(organizationController));
+
   app.delete('/:id', {
-    // onRequest: [app.authenticate],
+    onRequest: [app.authenticate],
     schema: organizationRouteDocs.deleteOrganization
   }, organizationController.deleteOrganization.bind(organizationController));
 }

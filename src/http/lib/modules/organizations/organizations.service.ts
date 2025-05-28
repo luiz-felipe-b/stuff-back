@@ -63,4 +63,22 @@ export class OrganizationService {
         if (!organization) throw new NotFoundError('Could not find organization with the given ID');
         return organization;
     }
+
+    async getOrganizationMembers(id: string) {
+        const members = await this.organizationRepository.getMembersByOrganizationId(id);
+        if (!members) throw new NotFoundError('Organization not found', 404);
+        return members;
+    }
+
+    async addOrganizationMember(organizationId: string, data: {userId: string, role: string}) { 
+        const { userId, role } = data;
+        if (!userId || !role) throw new BadRequestError('User ID and role are required');
+        const organization = await this.organizationRepository.getById(organizationId);
+        if (!organization) throw new NotFoundError('Organization not found');
+        
+        const member = await this.organizationRepository.addMember(organizationId, userId, role);
+        if (!member) throw new HttpError('InternalServerError', 'Failed to add member to organization', 500);
+        
+        return member;
+    }
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { commonErrorResponses, commonSuccessResponses } from "../../../../../types/http/responses";
 import { organizationIdParamSchema, organizationSchema, publicOrganizationSchema, updateOrganizationSchema } from "../organizations.schema";
+import { publicUserSchema } from "../../users/user.schema";
 
 export const organizationRouteDocs = {
     getAllOrganizations: {
@@ -96,5 +97,51 @@ export const organizationRouteDocs = {
             404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
-    }
+    },
+
+    getOrganizationMembers: {
+        description: 'Get organization members',
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization members found'),
+                data: z.array(publicUserSchema.omit({
+                    authenticated: true}))
+            }).describe('Organization members found'),
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+    },
+
+    addOrganizationMember: {
+        description: 'Add member to organization',
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        body: z.object({
+            userId: z.string({ message: 'User ID is required' }).min(1, { message: 'User ID is required' }),
+            role: z.enum(['admin', 'moderator', 'user'], {
+                message: 'Role must be one of the following: admin, moderator, user'
+            }).default('user'),
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Member added to organization'),
+                data: z.object({
+                    userId: z.string(),
+                    role: z.enum(['admin', 'moderator', 'user']),
+                    organizationId: z.string(),
+                    createdAt: z.date(),
+                    updatedAt: z.date(),
+                })
+            }).describe('Member added to organization'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+    },
 }

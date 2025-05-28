@@ -76,4 +76,31 @@ export class OrganizationController extends Controller {
         if (!deletedOrganization) throw new NotFoundError('Organization not found', 404);
         return reply.code(200).send({ message: 'Organization deleted successfully' });
     }
+
+    async getOrganizationMembers(request:FastifyRequest, reply:FastifyReply) {
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+        const { id } = params.data;
+
+        const members = await this.organizationService.getOrganizationMembers(id);
+        if (!members) throw new NotFoundError('Organization not found');
+
+        return reply.code(200).send({ data: members, message: 'Organization members found' });
+    }
+
+    async addOrganizationMember(request:FastifyRequest, reply:FastifyReply) {
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+        const { id } = params.data;
+
+        const bodyValidation = z.object({
+            userId: z.string({ message: 'User ID is required' }).min(1, { message: 'User ID is required' }),
+            role: z.enum(['admin', 'moderator', 'user'], { message: 'Role must be one of admin, moderator, or user' }),
+        });
+        const validatedBody = bodyValidation.safeParse(request.body);
+        if (!validatedBody.success) throw new BadRequestError(validatedBody.error.errors[0].message);
+
+        const member = await this.organizationService.addOrganizationMember(id, validatedBody.data);
+        return reply.code(201).send({ data: member, message: 'Member added to organization' });
+    }
 }
