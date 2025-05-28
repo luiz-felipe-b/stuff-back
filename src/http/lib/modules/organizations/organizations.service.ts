@@ -45,6 +45,9 @@ export class OrganizationService {
             ownerId,
             active: true
         });
+        if (!organization) throw new HttpError('InternalServerError', 'Failed to create organization', 500);
+        const ownerRelation = await this.organizationRepository.addMember(organization.id, ownerId, 'root');
+        if (!ownerRelation) throw new HttpError('InternalServerError', 'Failed to add owner to organization', 500);
         return organization;
     }
 

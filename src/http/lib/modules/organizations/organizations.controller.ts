@@ -36,6 +36,8 @@ export class OrganizationController extends Controller {
     }
 
     async createOrganization(request:FastifyRequest, reply:FastifyReply) {
+        // Validate the request user
+        if (!request.user || !request.user.id) throw new BadRequestError('User is required to create an organization');
         // Validate the request body
         const bodyValidation = z.object({
             name: z.string({ message: 'Name is required' }).min(1, { message: 'Name is required' }),

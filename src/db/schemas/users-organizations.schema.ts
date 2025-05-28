@@ -5,7 +5,7 @@ import { organizations } from "./organizations.schema.ts";
 
 const columns = {
     userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    organizationId: text('organization_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    organizationId: text('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     role: text('role').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
