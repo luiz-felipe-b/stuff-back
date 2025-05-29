@@ -4,9 +4,10 @@ import { UserService } from "./users.service.js";
 import { FastifyTypedInstance } from "../../../../types/fastify-typed-instance.js";
 import { userRouteDocs } from "./docs/user.doc.js";
 import { authorizeUserAccess } from "../../util/permission/authorize-permission.js";
+import { db } from "../../../../db/connection.js";
 
 export async function userRoutes(app: FastifyTypedInstance) {
-    const userRepository = new UserRepository();
+    const userRepository = new UserRepository(db);
     const userService = new UserService(userRepository);
     const userController = new UserController(userService);
 

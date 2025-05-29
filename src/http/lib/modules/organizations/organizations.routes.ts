@@ -33,12 +33,12 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
   }, organizationController.updateOrganization.bind(organizationController));
 
   app.get('/:id/members', {
-    // onRequest: [app.authenticate],
+    onRequest: [app.authenticate],
     schema: organizationRouteDocs.getOrganizationMembers
   }, organizationController.getOrganizationMembers.bind(organizationController));
 
   app.post('/:id/members', {
-    // onRequest: [app.authenticate],
+    onRequest: [app.authenticate],
     schema: organizationRouteDocs.addOrganizationMember
   }, organizationController.addOrganizationMember.bind(organizationController));
 
