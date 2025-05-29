@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm/pg-core/expressions";
+import { and, eq } from "drizzle-orm/pg-core/expressions";
 import { db } from "../../../../db/connection";
 import { organizations } from "../../../../db/schemas/organizations.schema";
 import { Organization, PublicOrganization } from "./organizations.schema";
@@ -60,25 +60,25 @@ export class OrganizationRepository {
 
    async getMembersByOrganizationId(organizationId: string): Promise<
       {
-         userId: string;
+         id: string;
          firstName: string;
          lastName: string;
          userName: string;
          email: string;
          role: "admin" | "moderator" | "user";
-         userTiers: "free" | "plus" | "pro" | "enterprise";
+         tier: "free" | "plus" | "pro" | "enterprise";
          active: boolean;
       }[]
    > {
       const result = await this.db
          .select({
-            userId: users.id,
+            id: users.id,
             firstName: users.firstName,
             lastName: users.lastName,
             userName: users.userName,
             email: users.email,
             role: users.role,
-            userTiers: users.tier,
+            tier: users.tier,
             active: users.active,
             updatedAt: users.updatedAt,
             createdAt: users.createdAt,
@@ -103,6 +103,36 @@ export class OrganizationRepository {
       const [result] = await this.db
          .insert(usersOrganizations)
          .values({ userId, organizationId, role })
+         .returning({
+            userId: usersOrganizations.userId,
+            organizationId: usersOrganizations.organizationId,
+            role: usersOrganizations.role,
+            createdAt: usersOrganizations.createdAt,
+            updatedAt: usersOrganizations.updatedAt,
+         });
+      return result;
+   }
+
+   async updateMember(
+      organizationId: string,
+      userId: string,
+      role: string
+   ): Promise<{
+      userId: string;
+      organizationId: string;
+      role: string;
+      createdAt: Date;
+      updatedAt: Date;
+   } | null> {
+      const [result] = await this.db
+         .update(usersOrganizations)
+         .set({ role, updatedAt: new Date() })
+         .where(
+            and(
+               eq(usersOrganizations.organizationId, organizationId),
+               eq(usersOrganizations.userId, userId)
+            )
+         )
          .returning({
             userId: usersOrganizations.userId,
             organizationId: usersOrganizations.organizationId,

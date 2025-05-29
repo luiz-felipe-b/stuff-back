@@ -32,6 +32,11 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     schema: organizationRouteDocs.updateOrganization
   }, organizationController.updateOrganization.bind(organizationController));
 
+  app.delete('/:id', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.deleteOrganization
+  }, organizationController.deleteOrganization.bind(organizationController));
+
   app.get('/:id/members', {
     onRequest: [app.authenticate],
     schema: organizationRouteDocs.getOrganizationMembers
@@ -42,8 +47,8 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     schema: organizationRouteDocs.addOrganizationMember
   }, organizationController.addOrganizationMember.bind(organizationController));
 
-  app.delete('/:id', {
+  app.patch('/:id/members/:userId', {
     onRequest: [app.authenticate],
-    schema: organizationRouteDocs.deleteOrganization
-  }, organizationController.deleteOrganization.bind(organizationController));
+    schema: organizationRouteDocs.updateOrganizationMember
+  }, organizationController.updateOrganizationMember.bind(organizationController));
 }

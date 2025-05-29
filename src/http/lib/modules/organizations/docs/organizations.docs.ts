@@ -80,6 +80,7 @@ export const organizationRouteDocs = {
             404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
+        security: [{ bearerAuth: [] }],
     },
 
     deleteOrganization: {
@@ -97,6 +98,7 @@ export const organizationRouteDocs = {
             404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
+        security: [{ bearerAuth: [] }],
     },
 
     getOrganizationMembers: {
@@ -114,6 +116,7 @@ export const organizationRouteDocs = {
             404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
+        security: [{ bearerAuth: [] }],
     },
 
     addOrganizationMember: {
@@ -143,5 +146,37 @@ export const organizationRouteDocs = {
             404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
+        security: [{ bearerAuth: [] }],
+    },
+
+    updateOrganizationMember: {
+        description: 'Update organization member role',
+        tags: ['organizations'],
+        params: z.object({
+            id: z.string({ message: 'Organization ID is required' }).min(1, { message: 'Organization ID is required' }),
+            userId: z.string({ message: 'User ID is required' }).min(1, { message: 'User ID is required' })
+        }),
+        body: z.object({
+            role: z.enum(['admin', 'moderator', 'user'], {
+                message: 'Role must be one of the following: admin, moderator, user'
+            }).default('user'),
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization member role updated'),
+                data: z.object({
+                    userId: z.string(),
+                    organizationId: z.string(),
+                    role: z.enum(['admin', 'moderator', 'user']),
+                    updatedAt: z.date(),
+                })
+            }).describe('Organization member role updated'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
     },
 }
