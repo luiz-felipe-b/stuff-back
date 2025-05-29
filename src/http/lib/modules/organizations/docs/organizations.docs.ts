@@ -179,4 +179,24 @@ export const organizationRouteDocs = {
         },
         security: [{ bearerAuth: [] }],
     },
+
+    deleteOrganizationMember: {
+        description: 'Delete organization member',
+        tags: ['organizations'],
+        params: z.object({
+            id: z.string({ message: 'Organization ID is required' }).min(1, { message: 'Organization ID is required' }),
+            userId: z.string({ message: 'User ID is required' }).min(1, { message: 'User ID is required' })
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization member deleted successfully'),
+            }).describe('Organization member deleted successfully'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
 }

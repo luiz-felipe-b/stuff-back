@@ -142,4 +142,32 @@ export class OrganizationRepository {
          });
       return result;
    }
+
+   async deleteMember(
+      organizationId: string,
+      userId: string
+   ): Promise<{
+      userId: string;
+      organizationId: string;
+      role: string;
+      createdAt: Date;
+      updatedAt: Date;
+   }[] | null> {
+      const result = await this.db
+         .delete(usersOrganizations)
+         .where(
+            and(
+               eq(usersOrganizations.organizationId, organizationId),
+               eq(usersOrganizations.userId, userId)
+            )
+         )
+         .returning({
+            userId: usersOrganizations.userId,
+            organizationId: usersOrganizations.organizationId,
+            role: usersOrganizations.role,
+            createdAt: usersOrganizations.createdAt,
+            updatedAt: usersOrganizations.updatedAt,
+         });
+      return result;
+   }
 }

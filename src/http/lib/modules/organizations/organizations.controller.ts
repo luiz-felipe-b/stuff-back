@@ -127,4 +127,19 @@ export class OrganizationController extends Controller {
 
         return reply.code(200).send({ data: updatedMember, message: 'Organization member updated successfully' });
     }
+
+    async deleteOrganizationMember(request:FastifyRequest, reply:FastifyReply) {
+        const validatedParams = z.object({
+            id: z.string({ message: 'Organization ID is required' }).min(1, { message: 'Organization ID is required' }),
+            userId: z.string({ message: 'User ID is required' }).min(1, { message: 'User ID is required' }),
+        }).safeParse(request.params);
+        if (!validatedParams.success) throw new BadRequestError(validatedParams.error.errors[0].message);
+
+        const { id: organizationId, userId } = validatedParams.data;
+
+        const deletedMember = await this.organizationService.deleteOrganizationMember(organizationId, userId);
+        if (!deletedMember) throw new NotFoundError('Organization member not found', 404);
+
+        return reply.code(200).send({ message: 'Organization member deleted successfully' });
+    }
 }
