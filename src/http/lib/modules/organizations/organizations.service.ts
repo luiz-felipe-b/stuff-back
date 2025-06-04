@@ -87,13 +87,12 @@ export class OrganizationService {
 
     async updateOrganizationMember(organizationId: string, userId: string, role: string) {
         if (!organizationId || !userId || !role) throw new BadRequestError('Organization ID, User ID and role are required');
-        const organization = await this.organizationRepository.getById(organizationId);
-        if (!organization) throw new NotFoundError('Organization not found');
         
         const updatedMember = await this.organizationRepository.updateMember(organizationId, userId, role);
-        if (!updatedMember) throw new HttpError('InternalServerError', 'Failed to update member in organization', 500);
-        
-        return updatedMember;
+        if (!updatedMember) throw new HttpError('InternalServerError', 'Failed to delete member from organization', 500);
+        if (updatedMember.length === 0) throw new NotFoundError('Member not found in organization', 404);
+
+        return [updatedMember];
     }
 
     async deleteOrganizationMember(organizationId: string, userId: string) {

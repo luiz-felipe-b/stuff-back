@@ -123,8 +123,8 @@ export class OrganizationRepository {
       role: string;
       createdAt: Date;
       updatedAt: Date;
-   } | null> {
-      const [result] = await this.db
+   }[] | null> {
+      const result = await this.db
          .update(usersOrganizations)
          .set({ role, updatedAt: new Date() })
          .where(

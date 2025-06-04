@@ -1,11 +1,14 @@
 import { pgTable, text, boolean, timestamp } from 'drizzle-orm/pg-core';
-import { organizations } from '../../../../../../db/schemas/organizations.schema.ts';
-import { users } from '../../../users/schemas/users-schema.ts';
-import { nanoid } from 'nanoid';
+import { organizations } from '../../organizations.schema.ts';
+import { v4 as uuidv4 } from 'uuid';
 import { relations } from 'drizzle-orm';
+import { users } from '../../users.schema.ts';
+import { assetTemplates } from '../assets-templates.schema.ts';
+import { dateValues, metricUnitValues, numberValues, textValues } from '../schemas.ts';
 
 const columns = {
-    id: text('id').$defaultFn(() => nanoid()).notNull(),
+    id: text('id').$defaultFn(() => uuidv4()).notNull().primaryKey(),
+    assetTemplateId: text('asset_id').notNull().references(() => assetTemplates.id),
     organizationId: text('organization_id').notNull().references(() => organizations.id),
     authorId: text('author_id').notNull().references(() => users.id),
     name: text('name').notNull(),
@@ -18,7 +21,12 @@ const columns = {
 
 export const attributes = pgTable('attributes', columns);
 
-export const attributesRelations = relations(attributes, ({ one }) => ({
+export const attributesRelations = relations(attributes, ({ one, many }) => ({
+    assetTemplate: one(assetTemplates, { fields: [attributes.assetTemplateId], references: [assetTemplates.id] }),
     organization: one(organizations, { fields: [attributes.organizationId], references: [organizations.id] }),
     author: one(users, { fields: [attributes.authorId], references: [users.id] }),
+    numberValues: many(numberValues),
+    textValues: many(textValues),
+    dateValues: many(dateValues),
+    metricUnitValues: many(metricUnitValues),
 }))

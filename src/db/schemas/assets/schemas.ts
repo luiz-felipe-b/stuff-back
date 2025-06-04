@@ -1,0 +1,12 @@
+export * from './assets-instances.schema.ts';
+export * from './assets-templates.schema.ts';
+export * from './attributes/attributes.schema.ts';
+export * from './attributes/values/number-value.schema.ts';
+export * from './attributes/values/text-value.schema.ts';
+export * from './attributes/values/metric-attributes.schema.ts';
+export * from './attributes/values/date-attributes.schema.ts';
+// export * from './attributes/values/switch.value.schema.ts';
+// export * from './attributes/values/file-attributes-schema.ts';
+// export * from './attributes/values/selection/selection-attributes-schema.ts';
+// export * from './attributes/values/selection/selection-options-attributes-schema.ts';
+// export * from './attributes/values/time-metric-attributes-schema.ts';
