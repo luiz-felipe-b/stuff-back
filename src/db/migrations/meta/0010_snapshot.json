@@ -1,6 +1,6 @@
 {
-  "id": "1b4a96c6-d29d-4cb7-b5ed-190e51d83b23",
-  "prevId": "eacefc6c-bd64-427c-a3f2-c7ba1c393d96",
+  "id": "e572f745-ae5d-4145-abf9-c869bfd8de23",
+  "prevId": "d4a6258b-953e-47f5-bcd1-d6a92bfd8b11",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -326,8 +326,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.item_instances": {
-      "name": "item_instances",
+    "public.assets_instances": {
+      "name": "assets_instances",
       "schema": "",
       "columns": {
         "id": {
@@ -340,7 +340,13 @@
           "name": "template_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "creator_user_id": {
           "name": "creator_user_id",
@@ -358,7 +364,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "trash_bin": {
           "name": "trash_bin",
@@ -370,21 +376,23 @@
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "item_instances_template_id_item_templates_id_fk": {
-          "name": "item_instances_template_id_item_templates_id_fk",
-          "tableFrom": "item_instances",
-          "tableTo": "item_templates",
+        "assets_instances_template_id_assets_templates_id_fk": {
+          "name": "assets_instances_template_id_assets_templates_id_fk",
+          "tableFrom": "assets_instances",
+          "tableTo": "assets_templates",
           "columnsFrom": [
             "template_id"
           ],
@@ -394,9 +402,22 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "item_instances_creator_user_id_users_id_fk": {
-          "name": "item_instances_creator_user_id_users_id_fk",
-          "tableFrom": "item_instances",
+        "assets_instances_organization_id_organizations_id_fk": {
+          "name": "assets_instances_organization_id_organizations_id_fk",
+          "tableFrom": "assets_instances",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assets_instances_creator_user_id_users_id_fk": {
+          "name": "assets_instances_creator_user_id_users_id_fk",
+          "tableFrom": "assets_instances",
           "tableTo": "users",
           "columnsFrom": [
             "creator_user_id"
@@ -414,8 +435,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.item_templates": {
-      "name": "item_templates",
+    "public.assets_templates": {
+      "name": "assets_templates",
       "schema": "",
       "columns": {
         "id": {
@@ -428,7 +449,7 @@
           "name": "organization_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "creator_user_id": {
           "name": "creator_user_id",
@@ -446,7 +467,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "trash_bin": {
           "name": "trash_bin",
@@ -458,20 +479,22 @@
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "item_templates_organization_id_organizations_id_fk": {
-          "name": "item_templates_organization_id_organizations_id_fk",
-          "tableFrom": "item_templates",
+        "assets_templates_organization_id_organizations_id_fk": {
+          "name": "assets_templates_organization_id_organizations_id_fk",
+          "tableFrom": "assets_templates",
           "tableTo": "organizations",
           "columnsFrom": [
             "organization_id"
@@ -482,9 +505,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "item_templates_creator_user_id_users_id_fk": {
-          "name": "item_templates_creator_user_id_users_id_fk",
-          "tableFrom": "item_templates",
+        "assets_templates_creator_user_id_users_id_fk": {
+          "name": "assets_templates_creator_user_id_users_id_fk",
+          "tableFrom": "assets_templates",
           "tableTo": "users",
           "columnsFrom": [
             "creator_user_id"
@@ -569,10 +592,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "attributes_asset_id_item_templates_id_fk": {
-          "name": "attributes_asset_id_item_templates_id_fk",
+        "attributes_asset_id_assets_templates_id_fk": {
+          "name": "attributes_asset_id_assets_templates_id_fk",
           "tableFrom": "attributes",
-          "tableTo": "item_templates",
+          "tableTo": "assets_templates",
           "columnsFrom": [
             "asset_id"
           ],
@@ -646,10 +669,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "number_values_asset_instance_id_item_instances_id_fk": {
-          "name": "number_values_asset_instance_id_item_instances_id_fk",
+        "number_values_asset_instance_id_assets_instances_id_fk": {
+          "name": "number_values_asset_instance_id_assets_instances_id_fk",
           "tableFrom": "number_values",
-          "tableTo": "item_instances",
+          "tableTo": "assets_instances",
           "columnsFrom": [
             "asset_instance_id"
           ],
@@ -710,10 +733,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "text_values_asset_instance_id_item_instances_id_fk": {
-          "name": "text_values_asset_instance_id_item_instances_id_fk",
+        "text_values_asset_instance_id_assets_instances_id_fk": {
+          "name": "text_values_asset_instance_id_assets_instances_id_fk",
           "tableFrom": "text_values",
-          "tableTo": "item_instances",
+          "tableTo": "assets_instances",
           "columnsFrom": [
             "asset_instance_id"
           ],
@@ -781,10 +804,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "metric_unit_values_asset_instance_id_item_instances_id_fk": {
-          "name": "metric_unit_values_asset_instance_id_item_instances_id_fk",
+        "metric_unit_values_asset_instance_id_assets_instances_id_fk": {
+          "name": "metric_unit_values_asset_instance_id_assets_instances_id_fk",
           "tableFrom": "metric_unit_values",
-          "tableTo": "item_instances",
+          "tableTo": "assets_instances",
           "columnsFrom": [
             "asset_instance_id"
           ],
@@ -845,10 +868,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "date_values_asset_instance_id_item_instances_id_fk": {
-          "name": "date_values_asset_instance_id_item_instances_id_fk",
+        "date_values_asset_instance_id_assets_instances_id_fk": {
+          "name": "date_values_asset_instance_id_assets_instances_id_fk",
           "tableFrom": "date_values",
-          "tableTo": "item_instances",
+          "tableTo": "assets_instances",
           "columnsFrom": [
             "asset_instance_id"
           ],

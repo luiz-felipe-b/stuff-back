@@ -8,16 +8,16 @@ import { assetInstances } from './assets-instances.schema.ts';
 
 const columns = {
     id: text('id').$defaultFn(() => uuidv4()).notNull().primaryKey(),
-    organizationId: text('organization_id').notNull().references(() => organizations.id),
+    organizationId: text('organization_id').references(() => organizations.id),
     creatorUserId: text('creator_user_id').notNull().references(() => users.id),
     name: text('name').notNull(),
-    description: text('description').notNull(),
+    description: text('description'),
     trashBin: boolean('trash_bin').notNull(),
-    createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
 };
 
-export const assetTemplates = pgTable('item_templates', columns);
+export const assetTemplates = pgTable('assets_templates', columns);
 
 export const assetTemplatesRelations = relations(assetTemplates, ({ one, many }) => ({
     organization: one(organizations, { fields: [assetTemplates.organizationId], references: [organizations.id]}),

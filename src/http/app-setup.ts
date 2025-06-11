@@ -40,6 +40,7 @@ export async function appSetup(app: FastifyInstance) {
                 { name: 'auth', description: 'Authentication related end-points' },
                 { name: 'user', description: 'User related end-points' },
                 { name: 'organizations', description: 'Organization related end-points' },
+                { name: 'assets', description: 'Assets related end-points' },
                 { name: 'to-do', description: 'End-points that still have work to be done' },
                 { name: 'swagger', description: 'Swagger related end-points' },
             ],
