@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, real, text } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, real, text, timestamp } from "drizzle-orm/pg-core";
 import { v4 as uuidv4 } from 'uuid';
 import { MetricUnit } from "../../../../../http/lib/modules/assets/definitions/enum/metric-unit-enum.ts";
 import { assetInstances } from "../../assets-instances.schema.ts";
@@ -13,6 +13,8 @@ const columns = {
     attributeId: text('attribute_id').notNull().references(() => attributes.id),
     value: real('value').notNull(),
     metric_unit: metricUnitEnum('metric_unit').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }
 
 export const metricUnitValues = pgTable('metric_unit_values', columns);

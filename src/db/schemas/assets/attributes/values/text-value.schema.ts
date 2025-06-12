@@ -1,4 +1,4 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { v4 as uuidv4 } from 'uuid';
 import { attributes } from "../attributes.schema.ts";
 import { relations } from "drizzle-orm";
@@ -9,6 +9,8 @@ const columns = {
     assetInstanceId: text('asset_instance_id').notNull().references(() => assetInstances.id),
     attributeId: text('attribute_id').notNull().references(() => attributes.id),
     value: text('value').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }
 
 export const textValues = pgTable('text_values', columns);

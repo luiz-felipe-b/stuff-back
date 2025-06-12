@@ -9,6 +9,8 @@ const columns = {
     assetInstanceId: text('asset_instance_id').notNull().references(() => assetInstances.id),
     attributeId: text('attribute_id').notNull().references(() => attributes.id),
     value: timestamp('value').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }
 
 export const dateValues = pgTable('date_values', columns);

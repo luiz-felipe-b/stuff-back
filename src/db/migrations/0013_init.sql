@@ -1,0 +1,1 @@
+ALTER TABLE "attributes" ALTER COLUMN "asset_id" DROP NOT NULL;

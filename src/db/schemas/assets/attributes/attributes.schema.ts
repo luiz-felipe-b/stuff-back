@@ -8,8 +8,8 @@ import { dateValues, metricUnitValues, numberValues, textValues } from '../schem
 
 const columns = {
     id: text('id').$defaultFn(() => uuidv4()).notNull().primaryKey(),
-    assetTemplateId: text('asset_id').notNull().references(() => assetTemplates.id),
-    organizationId: text('organization_id').notNull().references(() => organizations.id),
+    // assetTemplateId: text('asset_id').references(() => assetTemplates.id),
+    organizationId: text('organization_id').references(() => organizations.id),
     authorId: text('author_id').notNull().references(() => users.id),
     name: text('name').notNull(),
     description: text('description'),
@@ -22,7 +22,7 @@ const columns = {
 export const attributes = pgTable('attributes', columns);
 
 export const attributesRelations = relations(attributes, ({ one, many }) => ({
-    assetTemplate: one(assetTemplates, { fields: [attributes.assetTemplateId], references: [assetTemplates.id] }),
+    // assetTemplate: one(assetTemplates, { fields: [attributes.assetTemplateId], references: [assetTemplates.id] }),
     organization: one(organizations, { fields: [attributes.organizationId], references: [organizations.id] }),
     author: one(users, { fields: [attributes.authorId], references: [users.id] }),
     numberValues: many(numberValues),
