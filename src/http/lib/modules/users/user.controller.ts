@@ -152,6 +152,7 @@ export class UserController extends Controller {
     async deleteUser(req: FastifyRequest, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
             const params = userIdentifierParamSchema.safeParse(req.params);
+            console.log(params, req.params)
             if (!params.success) {
                 throw new BadRequestError('Missing user ID');
             }
@@ -162,3 +163,4 @@ export class UserController extends Controller {
         });
     }
 }
+ 

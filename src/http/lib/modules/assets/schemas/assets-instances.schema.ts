@@ -1,4 +1,3 @@
-import { desc } from "drizzle-orm";
 import { z } from "zod";
 
 export const assetInstanceSchema = z.object({

@@ -8,17 +8,9 @@ import { v4 as uuidv4 } from "uuid";
 import { InternalServerError } from "../../../util/errors/internal-server-error";
 
 export class AttributesController extends Controller {
-    private attributeValuesRepositories: Record<string, (data: any) => Promise<any>>;
 
-    constructor(private readonly attributesService: AttributesService) {
+    constructor(public readonly attributesService: AttributesService) {
         super();
-        this.attributeValuesRepositories = {
-            // text: this.attributesService.createTextValue,
-            number: this.attributesService.createNumberValue.bind(this.attributesService),
-            // boolean: this.attributesService.createBooleanValue,
-            // date: this.attributesService.createDateValue,
-            // select: this.attributesService.createSelectValue, 
-        };
      }
 
     async getAllAttributes(request: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -81,22 +73,15 @@ export class AttributesController extends Controller {
             const bodyValidation = z.object({
                 assetInstanceId: z.string().uuid(),
                 value: z.any(),
-                attributeType: z.enum(['number', 'text', 'boolean', 'date', 'select']),
+                attributeType: z.enum(['number', 'text', 'boolean', 'date', 'metric', 'select']),
+                metricUnit: z.string().optional(),
             }).safeParse(request.body);
-            if (!bodyValidation.success) {
-                throw new BadRequestError(bodyValidation.error.errors[0].message);
-            }
-            const { attributeType } = bodyValidation.data;
-            if (!this.attributeValuesRepositories[attributeType]) throw new BadRequestError(`Attribute type ${attributeType} is not supported`, 400);
-            const createValueFunction = this.attributeValuesRepositories[attributeType];
+            if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
             const valueData = {
-                id: uuidv4(),
                 attributeId,
-                createdAt: new Date(),
-                updatedAt: new Date(),
                 ...bodyValidation.data
             };
-            const result = await createValueFunction(valueData);
+            const result = await this.attributesService.createAttributeValue(valueData);
             if (!result) throw new InternalServerError("Failed to create attribute value");
             return reply.code(201).send({
                 data: result,

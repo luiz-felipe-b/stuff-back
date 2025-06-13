@@ -13,13 +13,13 @@ export async function userRoutes(app: FastifyTypedInstance) {
 
     app.get('/', {
         onRequest: [app.authenticate],
-        preHandler: [authorizeUserAccess(['admin', 'moderator', 'user'])],
+        // preHandler: [authorizeUserAccess(['admin', 'moderator', 'user'])],
         schema: userRouteDocs.getAllUsers
     }, userController.getAllUsers.bind(userController));
 
     app.get('/:identifier', {
         onRequest: [app.authenticate],
-        preHandler: [authorizeUserAccess(['admin', 'moderator'])],
+        // preHandler: [authorizeUserAccess(['admin', 'moderator'])],
         schema: userRouteDocs.getUserByIdentifier
     }, userController.getUserByIdentifier.bind(userController));
 
@@ -31,13 +31,13 @@ export async function userRoutes(app: FastifyTypedInstance) {
     app.post('/', {
         onRequest: [app.authenticate],
         schema: userRouteDocs.createUser,
-        preHandler: [authorizeUserAccess(['admin', 'moderator'])],
+        // preHandler: [authorizeUserAccess(['admin', 'moderator'])],
         attachValidation: true
     }, userController.createUser.bind(userController));
 
     app.patch('/:id', {
         onRequest: [app.authenticate],
-        preHandler: [authorizeUserAccess(['admin', 'moderator'])],
+        // preHandler: [authorizeUserAccess(['admin', 'moderator'])],
         schema: userRouteDocs.updateUser
     }, userController.updateUser.bind(userController));
 
@@ -51,7 +51,7 @@ export async function userRoutes(app: FastifyTypedInstance) {
         schema: userRouteDocs.updateMePassword
     }, userController.updateMePassword.bind(userController));
 
-    app.delete('/:id', {
+    app.delete('/:identifier', {
         onRequest: [app.authenticate],
         schema: userRouteDocs.deleteUser
     }, userController.deleteUser.bind(userController));

@@ -12,7 +12,7 @@ const columns = {
     assetInstanceId: text('asset_instance_id').notNull().references(() => assetInstances.id),
     attributeId: text('attribute_id').notNull().references(() => attributes.id),
     value: real('value').notNull(),
-    metric_unit: metricUnitEnum('metric_unit').notNull(),
+    metricUnit: metricUnitEnum('metric_unit').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }

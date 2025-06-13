@@ -47,7 +47,8 @@ export const attributesRoutesDocs = {
         body: z.object({
             assetInstanceId: z.string().uuid(),
             value: z.any(),
-            attributeType: z.enum(['number', 'text', 'boolean', 'date', 'select']),
+            metricUnit: z.string().optional(),
+            attributeType: z.enum(['number', 'text', 'boolean', 'date', 'metric', 'select']),
         }).describe('Attribute value creation schema'),
         response: {
             200: commonSuccessResponses[200].extend({
