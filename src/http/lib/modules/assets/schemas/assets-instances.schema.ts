@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { attributeWithValuesSchema } from "./attributes.schema";
 
 export const assetInstanceSchema = z.object({
     id: z.string().uuid({ message: "ID must be a valid UUID" }),
@@ -14,13 +15,19 @@ export const assetInstanceSchema = z.object({
 
 export type AssetInstance = z.infer<typeof assetInstanceSchema>;
 
+export const assetInstanceWithAttributesSchema = assetInstanceSchema.extend({
+    attributes: z.array(attributeWithValuesSchema).optional().default([]),
+});
+
+export type AssetInstanceWithAttributes = z.infer<typeof assetInstanceWithAttributesSchema>;
+
 export const createAssetInstanceSchema = assetInstanceSchema.omit({
     id: true,
     createdAt: true,
     updatedAt: true,
     trashBin: true,
 }).extend({
-    templateId: z.string().uuid({ message: "Template ID must be a valid UUID" }).optional(),
+    templateId: z.string().uuid({ message: "Template ID must be a valid UUID" }).optional().nullable(),
     organizationId: z.string().min(1, { message: "Organization ID is required" }).uuid({ message: "Organization ID must be a valid UUID" }).optional(),
     description: z.string().optional(),
 });

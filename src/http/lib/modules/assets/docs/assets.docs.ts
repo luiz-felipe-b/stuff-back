@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { commonSuccessResponses, commonErrorResponses } from "../../../../../types/http/responses";
-import { assetInstanceSchema, createAssetInstanceSchema } from "../schemas/assets-instances.schema";
+import { assetInstanceSchema, assetInstanceWithAttributesSchema, createAssetInstanceSchema } from "../schemas/assets-instances.schema";
 import { assetTemplateSchema } from "../schemas/assets-templates.schema";
 
 export const assetRouteDocs = {
@@ -17,6 +17,25 @@ export const assetRouteDocs = {
             }).describe('Assets found'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }]
+    },
+
+    getAssetById: {
+        description: 'Get asset by ID',
+        tags: ['assets'],
+        params: z.object({
+            id: z.string({ message: 'Asset ID is required' }).min(1, { message: 'Asset ID is required' })
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Asset found'),
+                data: assetInstanceWithAttributesSchema
+            }).describe('Asset found'),
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
             500: commonErrorResponses[500],
         },
         security: [{ bearerAuth: [] }]

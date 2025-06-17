@@ -2,6 +2,7 @@ import { z } from "zod";
 import { commonErrorResponses, commonSuccessResponses } from "../../../../../types/http/responses";
 import { organizationIdParamSchema, organizationSchema, publicOrganizationSchema, updateOrganizationSchema } from "../organizations.schema";
 import { publicUserSchema } from "../../users/user.schema";
+import { assetInstanceSchema } from "../../assets/schemas/assets-instances.schema";
 
 export const organizationRouteDocs = {
     getAllOrganizations: {
@@ -192,6 +193,23 @@ export const organizationRouteDocs = {
                 message: z.string().default('Organization member deleted successfully'),
             }).describe('Organization member deleted successfully'),
             400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
+
+    getOrganizationAssets: {
+        description: 'Get organization assets',
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization assets found'),
+                data: z.array(assetInstanceSchema)
+            }).describe('Organization assets found'),   
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],
             404: commonErrorResponses[404],

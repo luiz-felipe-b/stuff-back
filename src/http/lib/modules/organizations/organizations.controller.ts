@@ -142,4 +142,15 @@ export class OrganizationController extends Controller {
 
         return reply.code(200).send({ message: 'Organization member deleted successfully' });
     }
+
+    async getOrganizationAssets(request: FastifyRequest, reply: FastifyReply) {
+        const validatedParams = organizationIdParamSchema.safeParse(request.params);
+        if (!validatedParams.success) throw new BadRequestError(validatedParams.error.errors[0].message);
+        const { id } = validatedParams.data;
+
+        const assets = await this.organizationService.getOrganizationAssets(id);
+        if (!assets) throw new NotFoundError('Organization not found', 404);
+
+        return reply.code(200).send({ data: assets, message: 'Organization assets found' });
+    }
 }

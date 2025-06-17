@@ -15,6 +15,11 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
         schema: assetRouteDocs.getAllAssets
     }, assetsController.getAllAssets.bind(assetsController));
 
+    app.get('/:id', {
+        onRequest: [app.authenticate],
+        schema: assetRouteDocs.getAssetById
+    }, assetsController.getAssetById.bind(assetsController));
+
     app.post('/', {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.createAssetInstance,

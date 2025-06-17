@@ -106,4 +106,10 @@ export class OrganizationService {
         
         return [deletedMember];
     }
+
+    async getOrganizationAssets(id: string) {
+        const assets = await this.organizationRepository.getAssetsByOrganizationId(id);
+        if (!assets) throw new NotFoundError('Organization not found', 404);
+        return assets;
+    }
 }

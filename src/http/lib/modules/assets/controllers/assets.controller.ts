@@ -4,6 +4,7 @@ import { AssetsService } from "../services/assets.service";
 import { BadRequestError } from "../../../util/errors/bad-request.error";
 import { createAssetTemplateSchema } from "../schemas/assets-templates.schema";
 import { AssetInstance, createAssetInstanceSchema } from "../schemas/assets-instances.schema";
+import { z } from "zod";
 
 export class AssetsController extends Controller {
     private assetsService: AssetsService;
@@ -20,6 +21,25 @@ export class AssetsController extends Controller {
             return reply.code(200).send({
                 data: result,
                 message: 'Assets found',
+            });
+        });
+    }
+
+    async getAssetById(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsValidation = z.object({
+                id: z.string({ message: 'Asset ID is required' }).min(1, { message: 'Asset ID is required' }),
+            });
+            const validatedParams = paramsValidation.safeParse(request.params);
+            if (!validatedParams.success) throw new BadRequestError(validatedParams.error.errors[0].message);
+            const { id: assetId } = validatedParams.data;
+            if (!assetId) throw new BadRequestError('Asset ID is required');
+            const result = await this.assetsService.getAssetWithAttributes(assetId);
+            console.log('Asset found:', result);
+            if (!result) throw new BadRequestError('Asset not found');
+            return reply.code(200).send({
+                data: result,
+                message: 'Asset found',
             });
         });
     }

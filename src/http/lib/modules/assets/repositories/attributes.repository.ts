@@ -2,7 +2,7 @@ import { Database, Transaction } from "../../../../../types/db/database";
 import { attributes } from "../../../../../db/schemas/assets/attributes/attributes.schema";
 import { Attribute } from "../schemas/attributes.schema";
 import { dateValues, metricUnitValues, numberValues, textValues } from "../../../../../db/schemas/assets/schemas";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { DateValue, MetricValue, NumberValue, TextValue } from "../schemas/attribute-values.schema";
 
 

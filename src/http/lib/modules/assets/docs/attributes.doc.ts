@@ -2,7 +2,7 @@ import { z } from "zod";
 import { commonSuccessResponses, commonErrorResponses } from "../../../../../types/http/responses";
 import { assetInstanceSchema } from "../schemas/assets-instances.schema";
 import { assetTemplateSchema } from "../schemas/assets-templates.schema";
-import { createAttributeSchema } from "../schemas/attributes.schema";
+import { attributeSchema, createAttributeSchema } from "../schemas/attributes.schema";
 
 export const attributesRoutesDocs = {
     getAllAttributes: {
@@ -23,12 +23,17 @@ export const attributesRoutesDocs = {
     createAttribute: {
         description: "Create a new attribute.",
         tags: ["attributes"],
-        body: createAttributeSchema.omit({ authorId: true }).describe('Attribute creation schema'),
+        body: createAttributeSchema.describe('Attribute creation schema'),
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Attribute created successfully'),
                 data: z.object({
-                    attribute: createAttributeSchema
+                    attribute: attributeSchema.omit({
+                        createdAt: true,
+                        updatedAt: true,
+                        trashBin: true,
+                        authorId: true,
+                    })
                 })
             }).describe('Attribute created successfully'),
             403: commonErrorResponses[403],

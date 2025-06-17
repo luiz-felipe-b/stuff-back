@@ -56,4 +56,9 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     onRequest: [app.authenticate],
     schema: organizationRouteDocs.deleteOrganizationMember
   }, organizationController.deleteOrganizationMember.bind(organizationController));
+
+  app.get('/:id/assets', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.getOrganizationAssets,
+  }, organizationController.getOrganizationAssets.bind(organizationController));
 }
