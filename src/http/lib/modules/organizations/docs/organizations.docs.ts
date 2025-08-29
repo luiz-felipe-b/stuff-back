@@ -2,7 +2,7 @@ import { z } from "zod";
 import { commonErrorResponses, commonSuccessResponses } from "../../../../../types/http/responses";
 import { organizationIdParamSchema, organizationSchema, publicOrganizationSchema, updateOrganizationSchema } from "../organizations.schema";
 import { publicUserSchema } from "../../users/user.schema";
-import { assetInstanceSchema } from "../../assets/schemas/assets-instances.schema";
+import { assetSchema } from "../../assets/schemas/assets.schema";
 
 export const organizationRouteDocs = {
     getAllOrganizations: {
@@ -208,7 +208,7 @@ export const organizationRouteDocs = {
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Organization assets found'),
-                data: z.array(assetInstanceSchema)
+                data: z.array(assetSchema)
             }).describe('Organization assets found'),   
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],

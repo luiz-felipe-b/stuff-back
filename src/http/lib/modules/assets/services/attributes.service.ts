@@ -6,18 +6,7 @@ import { Attribute, AttributeWithValues, CreateAttribute, createAttributeSchema 
 import { v4 as uuidv4 } from "uuid";
 
 export class AttributesService {
-    private attributeValuesRepositories: Record<string, (data: any) => Promise<AttributeValue>>;
-
-    constructor(private readonly attributesRepository: AttributesRepository) {
-        this.attributeValuesRepositories = {
-            text: this.createTextValue.bind(this),
-            number: this.createNumberValue.bind(this),
-            // boolean: this.attributesRepository.createBooleanValue,
-            date: this.createDateValue.bind(this),
-            metric: this.createMetricValue.bind(this),
-            // select: this.attributesRepository.createSelectValue, 
-        }
-    }
+    constructor(private readonly attributesRepository: AttributesRepository) {}
 
     async getAttributeById(id: string): Promise<AttributeWithValues | null> {
         const result = await this.attributesRepository.getAttributeById(id);
@@ -82,105 +71,27 @@ export class AttributesService {
         return result;
     }
 
-    async createAttributeValue(data: CreateAttributeValue): Promise<Omit<AttributeValue, 'attributeType'>> {
-        const bodyValidation = createAttributeValueSchema.safeParse(data);
-        if (!bodyValidation.success) throw new BadRequestError('Invalid attribute value data', 400);
-        const { attributeType } = bodyValidation.data;
-        const attribute = await this.getAttributeById(bodyValidation.data.attributeId);
-        if (!attribute) throw new BadRequestError(`Attribute with id ${bodyValidation.data.attributeId} not found`, 404);
-        if (attribute.type !== attributeType) throw new BadRequestError(`Attribute type mismatch: expected ${attribute.type}, got ${attributeType}`, 400);
-        if (!this.attributeValuesRepositories[attributeType]) {
-            throw new BadRequestError(`Attribute type ${attributeType} is not supported`, 400);
+    async createAttributeValue(data: any): Promise<any> {
+        // Validate input (can use Zod schemas for each type if needed)
+        if (!data.assetInstanceId || !data.attributeId || typeof data.value === 'undefined') {
+            throw new BadRequestError('Invalid attribute value data', 400);
         }
-        const createValueFunction = this.attributeValuesRepositories[attributeType];
-        const result = await createValueFunction(data);
-
+        // Optionally validate type/unit/options here
+        const valueData = {
+            id: uuidv4(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            assetInstanceId: data.assetInstanceId,
+            attributeId: data.attributeId,
+            value: data.value,
+            metricUnit: data.metricUnit,
+            timeUnit: data.timeUnit
+        };
+        const result = await this.attributesRepository.createAttributeValue(valueData);
         if (!result) throw new InternalServerError("Failed to create attribute value");
         return result;
     }
 
-    async createNumberValue(data: CreateNumberValue): Promise<AttributeValue> {
-        const bodyValidation = createNumberValueSchema.safeParse(data);
-        if (!bodyValidation.success) throw new BadRequestError('Invalid number value data', 400);
-        const { assetInstanceId, attributeId, value } = bodyValidation.data;
-        if (typeof value !== 'number') throw new BadRequestError('Value must be a number', 400);
-
-        const valueData = {
-            id: uuidv4(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            assetInstanceId,
-            attributeId,
-            value
-        };
-        const result = await this.attributesRepository.createNumberValue(valueData);
-
-        if (!result) throw new InternalServerError("Failed to create number value");
-        return result;
-    }
-
-    async createTextValue(data: CreateTextValue): Promise<AttributeValue> {
-        const bodyValidation = createTextValueSchema.safeParse(data);
-        if (!bodyValidation.success) throw new BadRequestError('Invalid text value data', 400);
-        const { assetInstanceId, attributeId, value } = bodyValidation.data;
-
-        const valueData = {
-            id: uuidv4(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            assetInstanceId,
-            attributeId,
-            value
-        };
-        const result = await this.attributesRepository.createTextValue(valueData);
-
-        if (!result) throw new InternalServerError("Failed to create text value");
-        return result;
-    }
-
-    async createDateValue(data: CreateDateValue): Promise<AttributeValue> {
-        const bodyValidation = createDateValueSchema.safeParse(data);
-        if (!bodyValidation.success) throw new BadRequestError('Invalid date value data', 400);
-        const { assetInstanceId, attributeId, value } = bodyValidation.data;
-        const parsedDate = new Date(value);
-        console.log('value', value);
-        console.log('parsedDate', parsedDate);
-        if (isNaN(parsedDate.getTime())) throw new BadRequestError('Invalid date value', 400);
-        if (parsedDate.toString() === 'Invalid Date') throw new BadRequestError('Invalid date value', 400);
-        const valueData = {
-            id: uuidv4(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            assetInstanceId,
-            attributeId,
-            value: parsedDate
-        };
-        const result = await this.attributesRepository.createDateValue(valueData);
-        if (!result) throw new InternalServerError("Failed to create date value");
-        return result;
-    }
-
-    async createMetricValue(data: CreateMetricValue): Promise<AttributeValue> {
-        const bodyValidation = createMetricValueSchema.safeParse(data);
-        console.log('bodyValidation', bodyValidation);
-        console.log(data)
-        if (!bodyValidation.success) throw new BadRequestError('Invalid metric value data', 400);
-        const { assetInstanceId, attributeId, value, metricUnit } = bodyValidation.data;
-        if (typeof value !== 'number') throw new BadRequestError('Value must be a number', 400);
-
-        const valueData = {
-            id: uuidv4(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            assetInstanceId,
-            attributeId,
-            value,
-            metricUnit
-        };
-        const result = await this.attributesRepository.createMetricValue(valueData);
-
-        if (!result) throw new InternalServerError("Failed to create metric value");
-        return result;
-    }
+    // Deprecated: use createAttributeValue for all types
 
 }

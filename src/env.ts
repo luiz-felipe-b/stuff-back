@@ -10,7 +10,8 @@ const envSchema = z.object({
     ACCESS_TOKEN_EXPIRATION: z.string().default('15m'),
     BREVO_API_KEY: z.string(),
     SWAGGER_USERNAME: z.string(),
-    SWAGGER_PASSWORD: z.string()
+    SWAGGER_PASSWORD: z.string(),
+    REQUIRE_AUTH: z.string().default('true'),
 });
 
 const _env = envSchema.safeParse(process.env);

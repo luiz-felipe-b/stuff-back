@@ -1,13 +1,16 @@
-import { pgTable, text, boolean, timestamp } from 'drizzle-orm/pg-core';
-import { assetTemplates } from './assets-templates.schema.ts';
+import { pgTable, text, boolean, timestamp, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { assetTypes } from '../../../http/lib/modules/assets/types/asset-types.ts';
 import { relations } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { users } from '../users.schema.ts';
 import { organizations } from '../organizations.schema.ts';
 
+export const assetTypeEnum = pgEnum('asset_type', assetTypes);
+
 const columns = {
     id: text('id').$defaultFn(() => uuidv4()).notNull().primaryKey(),
-    templateId: text('template_id').references(() => assetTemplates.id),
+    type: assetTypeEnum('type').notNull(),
+    quantity: integer('quantity'), // for replicable assets, can be null for unique
     organizationId: text('organization_id').references(() => organizations.id),
     creatorUserId: text('creator_user_id').notNull().references(() => users.id),
     name: text('name').notNull(),
@@ -17,10 +20,9 @@ const columns = {
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 };
 
-export const assetInstances = pgTable('assets_instances', columns);
+export const assets = pgTable('assets', columns);
 
-export const assetInstancesRelations = relations(assetInstances, ({ one }) => ({
-    template: one(assetTemplates, { fields: [assetInstances.templateId], references: [assetTemplates.id]}),
-    organization: one(organizations, { fields: [assetInstances.organizationId], references: [organizations.id] }),
-    creator: one(users, { fields: [assetInstances.creatorUserId], references: [users.id]
- })}));
+export const assetsRelations = relations(assets, ({ one }) => ({
+    organization: one(organizations, { fields: [assets.organizationId], references: [organizations.id] }),
+    creator: one(users, { fields: [assets.creatorUserId], references: [users.id] })
+}));

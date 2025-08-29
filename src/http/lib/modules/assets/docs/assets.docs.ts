@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { commonSuccessResponses, commonErrorResponses } from "../../../../../types/http/responses";
-import { assetInstanceSchema, assetInstanceWithAttributesSchema, createAssetInstanceSchema } from "../schemas/assets-instances.schema";
-import { assetTemplateSchema } from "../schemas/assets-templates.schema";
+import { assetSchema, assetWithAttributesSchema, createAssetSchema } from "../schemas/assets.schema";
 
 export const assetRouteDocs = {
     getAllAssets: {
@@ -11,8 +10,7 @@ export const assetRouteDocs = {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Assets found'),
                 data: z.object({
-                    assets_templates: z.array(assetTemplateSchema),
-                    assets_instances: z.array(assetInstanceSchema)
+                    assets_instances: z.array(assetSchema)
                 })
             }).describe('Assets found'),
             403: commonErrorResponses[403],
@@ -31,7 +29,7 @@ export const assetRouteDocs = {
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Asset found'),
-                data: assetInstanceWithAttributesSchema
+                data: assetWithAttributesSchema
             }).describe('Asset found'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],
@@ -44,11 +42,11 @@ export const assetRouteDocs = {
     createAssetInstance: {
         description: 'Create an asset instance',
         tags: ['assets'],
-        body: createAssetInstanceSchema.omit({ creatorUserId: true }).describe('Asset instance creation schema'),
+        body: createAssetSchema.omit({ creatorUserId: true }).describe('Asset instance creation schema'),
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Assets found'),
-                data: z.array(assetInstanceSchema)
+                data: z.array(assetSchema)
             }).describe('Assets found'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],

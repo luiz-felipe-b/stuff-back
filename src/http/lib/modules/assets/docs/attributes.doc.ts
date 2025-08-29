@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { commonSuccessResponses, commonErrorResponses } from "../../../../../types/http/responses";
-import { assetInstanceSchema } from "../schemas/assets-instances.schema";
-import { assetTemplateSchema } from "../schemas/assets-templates.schema";
 import { attributeSchema, createAttributeSchema } from "../schemas/attributes.schema";
 
 export const attributesRoutesDocs = {

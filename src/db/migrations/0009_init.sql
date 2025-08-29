@@ -1,1 +1,0 @@
-ALTER TABLE "assets_templates" ALTER COLUMN "organization_id" DROP NOT NULL;

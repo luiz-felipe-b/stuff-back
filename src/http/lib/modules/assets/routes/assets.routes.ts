@@ -23,6 +23,6 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
     app.post('/', {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.createAssetInstance,
-    }, assetsController.createAssetInstance.bind(assetsController));
+    }, assetsController.createAsset.bind(assetsController));
     
 }

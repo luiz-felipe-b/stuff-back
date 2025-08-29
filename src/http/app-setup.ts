@@ -5,6 +5,7 @@ import { fastifySwaggerUi } from "@fastify/swagger-ui";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { validatorCompiler, serializerCompiler, jsonSchemaTransform } from "fastify-type-provider-zod";
 import { env } from "../env";
+import { features } from "../features";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
 import cors from '@fastify/cors'
@@ -85,22 +86,22 @@ export async function appSetup(app: FastifyInstance) {
     });
 
     app.decorate('authenticate', async (req: FastifyRequest, reply: FastifyReply) => {
+        if (!features.requireAuth) {
+            // Use the same admin user as seeded in the database
+            req.user = { id: '00000000-0000-0000-0000-000000000001', email: 'admin@example.com', role: 'admin' };
+            return;
+        }
         const authHeaderSchema = z.string().regex(/^Bearer\s.+$/);
-
-        const authHeader = req.headers.authorization
+        const authHeader = req.headers.authorization;
         const authHeaderResult = authHeaderSchema.safeParse(authHeader);
-
         if (authHeaderResult.success) {
             const accessToken = authHeaderResult.data.split(' ')[1];
-
             const accessResult = app.verifyToken(accessToken);
-
             if (accessResult.valid !== false) {
                 req.user = { id: accessResult.id, email: accessResult.email, role: accessResult.role };
                 return;
             }
         }
-
         return reply.code(401).send({
             error: 'UnauthorizedError',
             message: 'Authentication token is missing or not valid',

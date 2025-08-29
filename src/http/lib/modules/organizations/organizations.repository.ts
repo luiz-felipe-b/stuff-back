@@ -6,8 +6,8 @@ import { Database, Transaction } from "../../../../types/db/database";
 import { PublicUser } from "../users/user.schema";
 import { users, userTiers } from "../../../../db/schemas/users.schema";
 import { usersOrganizations } from "../../../../db/schemas/users-organizations.schema";
-import { assetInstances } from "../../../../db/schemas/assets/assets-instances.schema";
-import { AssetInstance } from "../assets/schemas/assets-instances.schema";
+import { assets } from "../../../../db/schemas/assets/assets.schema";
+import { Asset, assetSchema } from "../assets/schemas/assets.schema";
 
 export class OrganizationRepository {
    constructor(private readonly db: Database | Transaction) { }
@@ -173,11 +173,11 @@ export class OrganizationRepository {
       return result;
    }
 
-   async getAssetsByOrganizationId(organizationId: string): Promise<AssetInstance[]> {
+   async getAssetsByOrganizationId(organizationId: string): Promise<Asset[]> {
       const result = await this.db
          .select()
-         .from(assetInstances)
-         .where(eq(assetInstances.organizationId, organizationId));
+         .from(assets)
+         .where(eq(assets.organizationId, organizationId));
       return result;
    }
 }

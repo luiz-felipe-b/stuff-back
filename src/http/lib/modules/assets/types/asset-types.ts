@@ -1,0 +1,1 @@
+export const assetTypes = ["unique", "replicable"] as const;

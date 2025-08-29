@@ -1,54 +1,35 @@
 import { Database, Transaction } from "../../../../../types/db/database";
-import { assetInstances } from "../../../../../db/schemas/assets/assets-instances.schema";
-import { assetTemplates } from "../../../../../db/schemas/assets/assets-templates.schema";
-import { eq, or } from "drizzle-orm";
-import { AssetInstance } from "../schemas/assets-instances.schema";
-import { AssetTemplate } from "../schemas/assets-templates.schema";
-import { attributes, dateValues, metricUnitValues, numberValues, textValues } from "../../../../../db/schemas/assets/schemas";
-import { DateValue, MetricValue, NumberValue, TextValue } from "../schemas/attribute-values.schema";
+import { assets } from "../../../../../db/schemas/assets/assets.schema";import { eq, or } from "drizzle-orm";
+import { Asset } from "../schemas/assets.schema";
+import { attributes } from "../../../../../db/schemas/assets/schemas";
+import { attributeValues } from "../../../../../db/schemas/assets/attributes/attribute-values.schema";
 import { Attribute } from "../schemas/attributes.schema";
 
 export class AssetsRepository {
     constructor(private readonly db: Database | Transaction) { }
 
-    async createAssetInstance(data: AssetInstance): Promise<AssetInstance> {
+    async createAsset(data: Asset): Promise<Asset> {
         const [result] = (await this.db
-            .insert(assetInstances)
+            .insert(assets)
             .values(data)
-            .returning()) as AssetInstance[];
-        return result;
-    }
-
-    async createAssetTemplate(data: Omit<AssetTemplate, "createdAt" | "updatedAt">): Promise<AssetTemplate> {
-        const [result] = (await this.db
-            .insert(assetTemplates)
-            .values(data)
-            .returning()) as AssetTemplate[];
+            .returning()) as Asset[];
         return result;
     }
 
     async getAllAssets(): Promise<any[]> {
         const result = await this.db
             .select()
-            .from(assetInstances)
-            .fullJoin(assetTemplates, eq(assetInstances.templateId, assetTemplates.id));
+            .from(assets)
         return result;
     }
 
-    async getAssetWithAttributes(assetInstanceId: string): Promise<{assets_instances: AssetInstance | null, attributes: Attribute, number_values: NumberValue | null, text_values: TextValue | null, date_values: DateValue | null, metric_unit_values: MetricValue | null}[]> { 
+    async getAssetWithAttributes(assetInstanceId: string): Promise<any[]> {
         const result = await this.db
             .select()
-            .from(assetInstances)
-            .leftJoin(numberValues, eq(assetInstances.id, numberValues.assetInstanceId))
-            .leftJoin(textValues, eq(assetInstances.id, textValues.assetInstanceId))
-            .leftJoin(dateValues, eq(assetInstances.id, dateValues.assetInstanceId))
-            .leftJoin(metricUnitValues, eq(assetInstances.id, metricUnitValues.assetInstanceId))
-            .leftJoin(attributes, or(
-                eq(numberValues.attributeId, attributes.id), 
-                eq(textValues.attributeId, attributes.id), 
-                eq(dateValues.attributeId, attributes.id), 
-                eq(metricUnitValues.attributeId, attributes.id)
-            )).where(eq(assetInstances.id, assetInstanceId));
-        return result as {assets_instances: AssetInstance | null, attributes: Attribute, number_values: NumberValue | null, text_values: TextValue | null, date_values: DateValue | null, metric_unit_values: MetricValue | null}[];
+            .from(assets)
+            .leftJoin(attributeValues, eq(assets.id, attributeValues.assetInstanceId))
+            .leftJoin(attributes, eq(attributeValues.attributeId, attributes.id))
+            .where(eq(assets.id, assetInstanceId));
+        return result;
     }
 }

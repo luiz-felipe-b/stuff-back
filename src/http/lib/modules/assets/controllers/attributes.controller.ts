@@ -4,7 +4,6 @@ import { AttributesService } from "../services/attributes.service";
 import { BadRequestError } from "../../../util/errors/bad-request.error";
 import { createAttributeSchema } from "../schemas/attributes.schema";
 import { z } from "zod";
-import { v4 as uuidv4 } from "uuid";
 import { InternalServerError } from "../../../util/errors/internal-server-error";
 
 export class AttributesController extends Controller {
@@ -42,7 +41,8 @@ export class AttributesController extends Controller {
 
     async createAttribute(request: FastifyRequest, reply: FastifyReply): Promise<void> {
         return this.handleRequest(request, reply, async () => {
-            if (!request.user || !request.user.id) {
+            const user = request.user as { id: string };
+            if (!user || !user.id) {
                 throw new BadRequestError('User is required to create an attribute');
             }
             const bodyValidation = createAttributeSchema.omit({authorId: true}).safeParse(request.body);
@@ -51,7 +51,7 @@ export class AttributesController extends Controller {
             }
             const result = await this.attributesService.createAttribute({
                 ...bodyValidation.data,
-                authorId: request.user.id,
+                authorId: user.id,
             });
             return reply.code(201).send({
                 data: result,
@@ -62,7 +62,8 @@ export class AttributesController extends Controller {
 
     async createAttributeValue(request: FastifyRequest, reply: FastifyReply): Promise<void> {
         return this.handleRequest(request, reply, async () => {
-            if (!request.user || !request.user.id) {
+            const user = request.user as { id: string };
+            if (!user || !user.id) {
                 throw new BadRequestError('User is required to create an attribute value');
             }
             const paramsValidation = z.object({
@@ -73,8 +74,8 @@ export class AttributesController extends Controller {
             const bodyValidation = z.object({
                 assetInstanceId: z.string().uuid(),
                 value: z.any(),
-                attributeType: z.enum(['number', 'text', 'boolean', 'date', 'metric', 'select']),
                 metricUnit: z.string().optional(),
+                timeUnit: z.string().optional(),
             }).safeParse(request.body);
             if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
             const valueData = {
