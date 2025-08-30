@@ -6,6 +6,11 @@ import { attributeValues } from "../../../../../db/schemas/assets/attributes/att
 import { Attribute } from "../schemas/attributes.schema";
 
 export class AssetsRepository {
+    async deleteAsset(assetId: string): Promise<boolean> {
+        await this.db.delete(attributeValues).where(eq(attributeValues.assetInstanceId, assetId));
+        const result = await this.db.delete(assets).where(eq(assets.id, assetId));
+        return result.rowCount > 0;
+    }
     constructor(private readonly db: Database | Transaction) { }
 
     async createAsset(data: Asset): Promise<Asset> {

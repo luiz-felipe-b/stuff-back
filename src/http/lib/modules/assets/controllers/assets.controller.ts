@@ -6,6 +6,22 @@ import { Asset, createAssetSchema } from "../schemas/assets.schema";
 import { z } from "zod";
 
 export class AssetsController extends Controller {
+    async deleteAsset(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsValidation = z.object({
+                id: z.string().uuid({ message: 'Asset ID must be a valid UUID' })
+            });
+            const validatedParams = paramsValidation.safeParse(request.params);
+            if (!validatedParams.success) throw new BadRequestError(validatedParams.error.errors[0].message);
+            const { id: assetId } = validatedParams.data;
+            if (!assetId) throw new BadRequestError('Asset ID is required');
+            await this.assetsService.deleteAsset(assetId);
+            return reply.code(200).send({
+                data: { id: assetId },
+                message: 'Asset deleted',
+            });
+        });
+    }
     private assetsService: AssetsService;
 
     constructor(assetsService: AssetsService) {

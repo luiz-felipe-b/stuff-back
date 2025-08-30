@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { assetTypes } from "../types/asset-types"
+import { attributeWithValuesSchema } from "./attributes.schema";
 
 export const assetTypesEnum = z.enum(assetTypes);
 export type AssetTypes = z.infer<typeof assetTypesEnum>;
@@ -78,8 +79,7 @@ export type AssetAttributeValue = z.infer<typeof assetAttributeValueSchema>;
 
 // Asset with attributes and values
 export const assetWithAttributesSchema = assetSchema.extend({
-    attributes: z.array(attributeSchema).default([]),
-    values: z.array(assetAttributeValueSchema).default([]),
+    attributes: z.array(attributeWithValuesSchema).default([])
 });
 export type AssetWithAttributes = z.infer<typeof assetWithAttributesSchema>;
 

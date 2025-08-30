@@ -6,6 +6,16 @@ import { v4 as uuidv4 } from "uuid";
 import { AttributeWithValues } from "../schemas/attributes.schema";
 
 export class AssetsService {
+    async deleteAsset(assetId: string): Promise<void> {
+        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
+        // Check existence
+        const asset = await this.assetsRepository.getAssetWithAttributes(assetId);
+        if (!asset || (Array.isArray(asset) && asset.length === 0)) {
+            throw new BadRequestError('Asset not found', 404);
+        }
+        const deleted = await this.assetsRepository.deleteAsset(assetId);
+        if (!deleted) throw new InternalServerError('Failed to delete asset');
+    }
     private assetsRepository: AssetsRepository;
 
     constructor(assetsRepository: AssetsRepository) {
@@ -78,8 +88,7 @@ export class AssetsService {
             createdAt: assetInstanceData.createdAt,
             updatedAt: assetInstanceData.updatedAt,
             attributes: [],
-            type: "unique",
-            values: []
+            type: "unique"
         };
         // Collect unique attributes with their values
         const attributeMap = new Map();

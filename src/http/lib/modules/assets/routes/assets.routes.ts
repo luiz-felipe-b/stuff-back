@@ -24,5 +24,9 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.createAssetInstance,
     }, assetsController.createAsset.bind(assetsController));
+    app.delete('/:id', {
+        onRequest: [app.authenticate],
+        schema: assetRouteDocs.deleteAsset,
+    }, assetsController.deleteAsset.bind(assetsController));
     
 }
