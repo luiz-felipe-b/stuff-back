@@ -3,11 +3,46 @@ import { attributes } from "../../../../../db/schemas/assets/attributes/attribut
 import { Attribute } from "../schemas/attributes.schema";
 import { attributeValues } from "../../../../../db/schemas/assets/attributes/attribute-values.schema";
 import { eq, or } from "drizzle-orm";
-import { DateValue, MetricValue, NumberValue, TextValue } from "../schemas/attribute-values.schema";
 
 
 export class AttributesRepository {
     constructor(private readonly db: Database | Transaction) {}
+
+    async updateAttribute(id: string, data: Partial<Attribute>): Promise<Attribute | null> {
+        const [result] = await this.db
+            .update(attributes)
+            .set({ ...data, updatedAt: new Date() })
+            .where(eq(attributes.id, id))
+            .returning() as Attribute[];
+        return result ?? null;
+    }
+
+    async deleteAttribute(id: string): Promise<Attribute | null> {
+        await this.db.delete(attributeValues).where(eq(attributeValues.attributeId, id));
+        const [result] = await this.db
+            .delete(attributes)
+            .where(eq(attributes.id, id))
+            .returning() as Attribute[];
+        return result ?? null;
+    }
+
+    async updateAttributeValue(id: string, data: Partial<any>): Promise<any | null> {
+        const [result] = await this.db
+            .update(attributeValues)
+            .set({ ...data, updatedAt: new Date() })
+            .where(eq(attributeValues.id, id))
+            .returning();
+        return result ?? null;
+    }
+
+    async deleteAttributeValue(id: string): Promise<any | null> {
+        const [result] = await this.db
+            .delete(attributeValues)
+            .where(eq(attributeValues.id, id))
+            .returning();
+        return result ?? null;
+    }
+    
 
     async createAttribute(data: Attribute): Promise<Attribute> {
         const [result] = await this.db
@@ -18,6 +53,7 @@ export class AttributesRepository {
     }
 
     async createAttributeValue(data: any): Promise<any> {
+        console.log(data)
         const [result] = await this.db
             .insert(attributeValues)
             .values(data)

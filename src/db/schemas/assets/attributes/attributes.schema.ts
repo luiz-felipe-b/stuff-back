@@ -16,7 +16,7 @@ const columns = {
     type: pgEnum('attribute_type', attributeTypes)('type').notNull(),
     unit: text('unit'), // for metric
     timeUnit: text('time_unit'), // for timemetric
-    options: text('options'), // JSON string for selection/multiselection options
+    options: text('options'), // Comma-separated string for selection/multiselection options
     required: boolean('required').notNull().default(false),
     trashBin: boolean('trash_bin').notNull(),
     createdAt: timestamp('created_at').notNull(),

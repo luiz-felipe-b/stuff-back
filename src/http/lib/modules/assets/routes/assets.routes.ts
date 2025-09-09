@@ -12,8 +12,13 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
 
     app.get('/', {
         onRequest: [app.authenticate],
-        schema: assetRouteDocs.getAllAssets
-    }, assetsController.getAllAssets.bind(assetsController));
+        schema: assetRouteDocs.getAllAssetsWithAttributes
+    }, assetsController.getAllAssetsWithAttributes.bind(assetsController));
+
+    // app.get('/', {
+    //     onRequest: [app.authenticate],
+    //     schema: assetRouteDocs.getAllAssets
+    // }, assetsController.getAllAssets.bind(assetsController));
 
     app.get('/:id', {
         onRequest: [app.authenticate],
@@ -24,6 +29,12 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.createAssetInstance,
     }, assetsController.createAsset.bind(assetsController));
+
+    app.patch('/:id', {
+        onRequest: [app.authenticate],
+        schema: assetRouteDocs.editAsset,
+    }, assetsController.editAsset.bind(assetsController));
+    
     app.delete('/:id', {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.deleteAsset,

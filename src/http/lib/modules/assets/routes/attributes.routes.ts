@@ -14,18 +14,38 @@ export async function attributesRoutes(app) {
         schema: attributesRoutesDocs.getAllAttributes
     }, attributesController.getAllAttributes.bind(attributesController));
 
+    app.get('/:attributeId', {
+        onRequest: [app.authenticate],
+        schema: attributesRoutesDocs.getAttributeById
+    }, attributesController.getAttributeById.bind(attributesController));
+
     app.post('/', {
         onRequest: [app.authenticate],
         schema: attributesRoutesDocs.createAttribute
     }, attributesController.createAttribute.bind(attributesController));
+
+    app.patch('/:attributeId', {
+        onRequest: [app.authenticate],
+        schema: attributesRoutesDocs.updateAttribute
+    }, attributesController.updateAttribute.bind(attributesController));
+
+    app.delete('/:attributeId', {
+        onRequest: [app.authenticate],
+        schema: attributesRoutesDocs.deleteAttribute
+    }, attributesController.deleteAttribute.bind(attributesController));
 
     app.post('/:attributeId/value', {
         onRequest: [app.authenticate],
         schema: attributesRoutesDocs.createAttributeValue
     }, attributesController.createAttributeValue.bind(attributesController));
 
-    // app.get('/:id', {
-    //     onRequest: [app.authenticate],
-    //     schema: attributesRoutesDocs.getAttributeById
-    // }, attributesController.getAttributeById.bind(attributesController));
+    app.patch('/value/:attributeValueId', {
+        onRequest: [app.authenticate],
+        schema: attributesRoutesDocs.updateAttributeValue
+    }, attributesController.updateAttributeValue.bind(attributesController));
+
+    app.delete('/value/:attributeValueId', {
+        onRequest: [app.authenticate],
+        schema: attributesRoutesDocs.deleteAttributeValue
+    }, attributesController.deleteAttributeValue.bind(attributesController));
 }

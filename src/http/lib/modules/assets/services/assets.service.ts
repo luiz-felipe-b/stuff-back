@@ -1,21 +1,10 @@
 import { BadRequestError } from "../../../util/errors/bad-request.error";
 import { InternalServerError } from "../../../util/errors/internal-server-error";
 import { AssetsRepository } from "../repositories/assets.repository";
-import { Asset, AssetWithAttributes, CreateAsset, createAssetSchema } from "../schemas/assets.schema";
+import { Asset, AssetWithAttributes, CreateAsset, createAssetSchema, UpdateAsset, updateAssetSchema } from "../schemas/assets.schema";
 import { v4 as uuidv4 } from "uuid";
-import { AttributeWithValues } from "../schemas/attributes.schema";
 
 export class AssetsService {
-    async deleteAsset(assetId: string): Promise<void> {
-        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
-        // Check existence
-        const asset = await this.assetsRepository.getAssetWithAttributes(assetId);
-        if (!asset || (Array.isArray(asset) && asset.length === 0)) {
-            throw new BadRequestError('Asset not found', 404);
-        }
-        const deleted = await this.assetsRepository.deleteAsset(assetId);
-        if (!deleted) throw new InternalServerError('Failed to delete asset');
-    }
     private assetsRepository: AssetsRepository;
 
     constructor(assetsRepository: AssetsRepository) {
@@ -43,71 +32,103 @@ export class AssetsService {
         return result;
     }
 
-    async getAllAssets(): Promise<{
-        assets_instances: Asset[];
-    }> {
+    async getAllAssets(): Promise<{ assets: Asset[] }> {
         const result = await this.assetsRepository.getAllAssets();
-
         if (!result) {
             throw new InternalServerError("Failed to fetch assets");
         }
-        const organizedAssets = {
-            assets_instances: [] as Asset[]
-        };
-
-        // Categorize each asset based on whether it has a templateId
+        const organizedAssets = { assets: [] as Asset[] };
         for (const asset of result) {
-            if (asset.assets_instances) {
-                organizedAssets.assets_instances.push(asset.assets_instances);
-            }
+            organizedAssets.assets.push(asset);
         }
-
         return organizedAssets;
     }
 
-    async getAssetWithAttributes(assetInstanceId: string): Promise<AssetWithAttributes> {
-        if (!assetInstanceId) throw new BadRequestError('Asset instance ID is required', 400);
-        const result = await this.assetsRepository.getAssetWithAttributes(assetInstanceId);
+    async getAllAssetsWithAttributes(): Promise<{ assets: AssetWithAttributes[] }> {
+        const result = await this.assetsRepository.getAllAssetsWithAttributes();
         if (!result || result.length === 0) {
-            throw new InternalServerError("Failed to fetch asset with attributes");
+            throw new InternalServerError("Failed to fetch assets with attributes");
         }
-        // Check if asset instance exists
-        const assetInstanceData = result[0].assets_instances;
-        if (!assetInstanceData) {
-            throw new BadRequestError(`Asset instance with id ${assetInstanceId} not found`, 404);
-        }
-        // Process the result to return a structured AssetInstanceWithAttributes
-        const assetInstance: AssetWithAttributes = {
-            id: assetInstanceData.id,
-            organizationId: assetInstanceData.organizationId,
-            quantity: assetInstanceData.quantity,
-            creatorUserId: assetInstanceData.creatorUserId,
-            name: assetInstanceData.name,
-            description: assetInstanceData.description,
-            trashBin: assetInstanceData.trashBin,
-            createdAt: assetInstanceData.createdAt,
-            updatedAt: assetInstanceData.updatedAt,
-            attributes: [],
-            type: "unique"
-        };
-        // Collect unique attributes with their values
-        const attributeMap = new Map();
+        // Group by asset id
+        const assetMap = new Map<string, AssetWithAttributes>();
         for (const row of result) {
-            if (row.attributes) {
-                const attrId = row.attributes.id;
-                if (!attributeMap.has(attrId)) {
-                    attributeMap.set(attrId, {
-                        ...row.attributes,
-                        values: []
-                    });
-                }
-                const attribute = attributeMap.get(attrId);
-                if (row.asset_attribute_values) {
-                    attribute.values.push(row.asset_attribute_values);
-                }
+            const assetRow = row.assets;
+            if (!assetMap.has(assetRow.id)) {
+                assetMap.set(assetRow.id, {
+                    id: assetRow.id,
+                    organizationId: assetRow.organizationId,
+                    quantity: assetRow.quantity,
+                    creatorUserId: assetRow.creatorUserId,
+                    name: assetRow.name,
+                    description: assetRow.description,
+                    trashBin: assetRow.trashBin,
+                    createdAt: assetRow.createdAt,
+                    updatedAt: assetRow.updatedAt,
+                    type: assetRow.type,
+                    attributes: []
+                });
+            }
+            if (row.attributes && row.attributes.id) {
+                const attributeObj = {
+                    ...row.attributes,
+                    value: row.attribute_values ? row.attribute_values : null
+                };
+                assetMap.get(assetRow.id)!.attributes.push(attributeObj);
             }
         }
-        assetInstance.attributes = Array.from(attributeMap.values());
-        return assetInstance;
+        return { assets: Array.from(assetMap.values()) };
+    }
+
+    async getAssetWithAttributes(assetId: string): Promise<AssetWithAttributes> {
+        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
+        const result = await this.assetsRepository.getAssetWithAttributes(assetId);
+        if (!result || result.length === 0 || !result[0].assets) {
+            throw new BadRequestError(`Asset instance with id ${assetId} not found`, 404);
+        }
+        // Extract asset fields from the first row's assets
+        const assetRow = result[0].assets;
+        const asset: AssetWithAttributes = {
+            id: assetRow.id,
+            organizationId: assetRow.organizationId,
+            quantity: assetRow.quantity,
+            creatorUserId: assetRow.creatorUserId,
+            name: assetRow.name,
+            description: assetRow.description,
+            trashBin: assetRow.trashBin,
+            createdAt: assetRow.createdAt,
+            updatedAt: assetRow.updatedAt,
+            type: assetRow.type,
+            attributes: []
+        };
+        // Collect attributes, each with a value property containing the full attribute value object
+        const attributes: any[] = [];
+        console.log(result[0])
+        for (const row of result) {
+            if (row.attributes && row.attributes.id) {
+                const attributeObj = {
+                    ...row.attributes,
+                    value: row.attribute_values ? row.attribute_values : null
+                };
+                attributes.push(attributeObj);
+            }
+        }
+        asset.attributes = attributes;
+        console.log(asset);
+        return asset;
+    }
+
+    async editAsset(assetId: string, data: UpdateAsset): Promise<Asset> {
+        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
+        const dataValidation = updateAssetSchema.safeParse(data);
+        if (!dataValidation.success) throw new BadRequestError('Invalid asset update data', 400);
+        const updated = await this.assetsRepository.editAsset(assetId, dataValidation.data);
+        if (!updated) throw new InternalServerError('Failed to update asset');
+        return updated;
+    }
+    async deleteAsset(assetId: string): Promise<void> {
+        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
+        const deleted = await this.assetsRepository.deleteAsset(assetId);
+        console.log(deleted);
+        if (!deleted) throw new InternalServerError('Failed to delete asset');
     }
 }

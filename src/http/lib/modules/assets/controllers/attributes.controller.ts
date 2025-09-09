@@ -71,22 +71,98 @@ export class AttributesController extends Controller {
             }).safeParse(request.params);
             if (!paramsValidation.success) throw new BadRequestError(paramsValidation.error.errors[0].message);
             const { attributeId } = paramsValidation.data;
+            console.log(attributeId)
             const bodyValidation = z.object({
-                assetInstanceId: z.string().uuid(),
-                value: z.any(),
-                metricUnit: z.string().optional(),
-                timeUnit: z.string().optional(),
+                assetId: z.string().uuid(),
+                value: z.string()
             }).safeParse(request.body);
             if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
             const valueData = {
                 attributeId,
                 ...bodyValidation.data
             };
+            console.log(valueData)
             const result = await this.attributesService.createAttributeValue(valueData);
             if (!result) throw new InternalServerError("Failed to create attribute value");
             return reply.code(201).send({
                 data: result,
                 message: 'Attribute value created successfully',
+            });
+        });
+    }
+
+    async updateAttribute(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsSchema = z.object({
+                attributeId: z.string().uuid(),
+            });
+            const paramsValidation = paramsSchema.safeParse(request.params);
+            if (!paramsValidation.success) throw new BadRequestError(paramsValidation.error.errors[0].message);
+            const { attributeId } = paramsValidation.data;
+            const bodyValidation = createAttributeSchema.omit({ authorId: true }).partial().safeParse(request.body);
+            if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
+            const result = await this.attributesService.updateAttribute(attributeId, bodyValidation.data);
+            if (!result) throw new InternalServerError("Failed to update attribute");
+            return reply.code(200).send({
+                data: result,
+                message: 'Attribute updated successfully',
+            });
+        });
+    }
+
+    async deleteAttribute(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsSchema = z.object({
+                attributeId: z.string().uuid(),
+            });
+            const paramsValidation = paramsSchema.safeParse(request.params);
+            if (!paramsValidation.success) throw new BadRequestError(paramsValidation.error.errors[0].message);
+            const { attributeId } = paramsValidation.data;
+            const result = await this.attributesService.deleteAttribute(attributeId);
+            if (!result) throw new InternalServerError("Failed to delete attribute");
+            return reply.code(200).send({
+                data: result,
+                message: 'Attribute deleted successfully',
+            });
+        });
+    }
+
+    async updateAttributeValue(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsSchema = z.object({
+                attributeValueId: z.string().uuid(),
+            });
+            const paramsValidation = paramsSchema.safeParse(request.params);
+            if (!paramsValidation.success) throw new BadRequestError(paramsValidation.error.errors[0].message);
+            const { attributeValueId } = paramsValidation.data;
+            const bodyValidation = z.object({
+                value: z.any().optional(),
+                metricUnit: z.string().optional(),
+                timeUnit: z.string().optional(),
+            }).partial().safeParse(request.body);
+            if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
+            const result = await this.attributesService.updateAttributeValue(attributeValueId, bodyValidation.data);
+            if (!result) throw new InternalServerError("Failed to update attribute value");
+            return reply.code(200).send({
+                data: result,
+                message: 'Attribute value updated successfully',
+            });
+        });
+    }
+
+    async deleteAttributeValue(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsSchema = z.object({
+                attributeValueId: z.string().uuid(),
+            });
+            const paramsValidation = paramsSchema.safeParse(request.params);
+            if (!paramsValidation.success) throw new BadRequestError(paramsValidation.error.errors[0].message);
+            const { attributeValueId } = paramsValidation.data;
+            const result = await this.attributesService.deleteAttributeValue(attributeValueId);
+            if (!result) throw new InternalServerError("Failed to delete attribute value");
+            return reply.code(200).send({
+                data: result,
+                message: 'Attribute value deleted successfully',
             });
         });
     }

@@ -133,10 +133,10 @@ async function seed() {
             { name: 'RAM Size', description: 'Laptop RAM in GB', type: 'number' },
             { name: 'Is Active', description: 'Is the asset active?', type: 'boolean' },
             { name: 'Purchase Date', description: 'Date of purchase', type: 'date' },
-            { name: 'Weight', description: 'Weight in kilograms', type: 'metric' },
+            { name: 'Weight', description: 'Weight in kilograms', type: 'metric', unit: 'kg' },
             { name: 'Operating System', description: 'Laptop OS', type: 'select', options: JSON.stringify(['Windows', 'macOS', 'Linux']) },
             { name: 'Accessories', description: 'Included accessories', type: 'multiselection', options: JSON.stringify(['Mouse', 'Charger', 'Bag']) },
-            { name: 'Uptime', description: 'Server uptime', type: 'timemetric' },
+            { name: 'Uptime', description: 'Server uptime', type: 'timemetric', timeUnit: 'seconds' },
             { name: 'Manual File', description: 'URL to asset manual', type: 'file' },
             { name: 'RFID Tag', description: 'RFID tag ID', type: 'rfid' }
         ];
@@ -153,6 +153,8 @@ async function seed() {
                 description: attr.description,
                 type: attr.type,
                 options: attr.options || null,
+                unit: attr.unit || null,
+                timeUnit: attr.timeUnit || null,
                 required: false,
                 trashBin: false,
                 createdAt: new Date(),
@@ -161,52 +163,50 @@ async function seed() {
         }
         await db.insert(attributes).values(attributeInsertData).onConflictDoNothing();
 
-        // Seed attribute values with correct types
+        // Seed attribute values with correct types (all as strings)
         for (let i = 0; i < assetIds.length; i++) {
             for (let j = 0; j < attributeIds.length; j++) {
                 const attrType = attributeSamples[j].type;
-                let value: any;
+                let value: string | number;
                 switch (attrType) {
                     case 'text':
-                        value = { value: `ABC-${1000 + i}` };
+                        value = `ABC-${1000 + i}`;
                         break;
                     case 'number':
-                        value = { value: 4 + i }; // e.g. RAM size in GB
+                        value = String(4 + i); // RAM size in GB
                         break;
                     case 'boolean':
-                        value = { value: i % 2 === 0 };
+                        value = (i % 2 === 0).toString();
                         break;
                     case 'date':
-                        value = { value: new Date(Date.now() - (i * 86400000)).toISOString() };
+                        value = new Date(Date.now() - (i * 86400000)).toISOString();
                         break;
                     case 'metric':
-                        value = { amount: 2.5 + i, unit: 'kg' };
+                        value = String(2.5 + i);
                         break;
                     case 'select':
-                        value = { value: ['Windows', 'macOS', 'Linux'][i % 3] };
+                        value = ['Windows', 'macOS', 'Linux'][i % 3];
                         break;
                     case 'multiselection':
-                        value = { value: ['Mouse', 'Charger', 'Bag'].filter((_, idx) => (i + idx) % 2 === 0) };
+                        value = ['Mouse', 'Charger', 'Bag'].filter((_, idx) => (i + idx) % 2 === 0).join(',');
                         break;
                     case 'timemetric':
-                        value = { value: 3600 * (i + 1), unit: ['seconds', 'minutes', 'hours'][i % 3] };
+                        value = 3600 * (i + 1); // integer seconds
                         break;
                     case 'file':
-                        value = { url: `https://example.com/manuals/asset${i + 1}.pdf` };
+                        value = `https://example.com/manuals/asset${i + 1}.pdf`;
                         break;
                     case 'rfid':
-                        value = { tagId: `RFID-${10000 + i}` };
+                        value = `RFID-${10000 + i}`;
                         break;
                     default:
-                        value = { value: null };
+                        value = '';
                 }
                 await db.insert(attributeValues).values({
                     id: uuidv4(),
                     assetInstanceId: assetIds[i],
                     attributeId: attributeIds[j],
-                    value,
-                    metricUnit: attrType === 'metric' ? 'kg' : null,
-                    timeUnit: attrType === 'timemetric' ? value.unit : null,
+                    value: typeof value === 'number' ? value.toString() : value,
                     createdAt: new Date(),
                     updatedAt: new Date()
                 }).onConflictDoNothing();

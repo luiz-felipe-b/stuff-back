@@ -69,7 +69,7 @@ CREATE TABLE "attributes" (
 	"type" text NOT NULL,
 	"unit" text,
 	"time_unit" text,
-	"options" text,
+	"options" text, -- Comma-separated string for selection/multiselection options
 	"required" boolean DEFAULT false NOT NULL,
 	"trash_bin" boolean NOT NULL,
 	"created_at" timestamp NOT NULL,

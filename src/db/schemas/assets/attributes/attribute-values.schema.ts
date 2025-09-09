@@ -7,9 +7,7 @@ const columns = {
     id: text('id').$defaultFn(() => uuidv4()).notNull().primaryKey(),
     assetInstanceId: text('asset_id').notNull().references(() => assets.id),
     attributeId: text('attribute_id').notNull().references(() => attributes.id),
-    value: jsonb('value').notNull(), // stores number, string, boolean, date, array, file url, etc.
-    metricUnit: text('metric_unit'), // for metric attributes
-    timeUnit: text('time_unit'), // for time metric attributes
+    value: text('value').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 };

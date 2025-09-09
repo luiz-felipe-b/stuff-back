@@ -1,21 +1,27 @@
 import { z } from "zod";
-import { dateValueSchema, metricValueSchema, numberValueSchema, textValueSchema } from "./attribute-values.schema";
+import { attributeValueSchema } from "./attribute-values.schema";
 import { attributeTypes } from "../types/attribute-types";
+import { MetricUnit } from "../definitions/enum/metric-unit-enum";
 
 export const attributeTypesEnum = z.enum(attributeTypes);
 export type AttributeTypes = z.infer<typeof attributeTypesEnum>;
 
 export const attributeSchema = z.object({
     id: z.string().uuid(),
-    name: z.string().min(1, "Name is required"),
-    description: z.string().optional(),
-        type: attributeTypesEnum,
-    createdAt: z.date().default(() => new Date()),
-    updatedAt: z.date().default(() => new Date()),
-    organizationId: z.string().uuid().optional().nullable(),
+    organizationId: z.string().uuid().nullable().optional(),
     authorId: z.string().uuid(),
+    name: z.string().min(1, "Name is required"),
+    description: z.string().nullable().optional(),
+    type: attributeTypesEnum,
+    unit: z.string().nullable().optional(),
+    timeUnit: z.string().nullable().optional(),
+    options: z.string().nullable().optional(),
+    required: z.boolean().default(false),
     trashBin: z.boolean().default(false),
+    createdAt: z.date(),
+    updatedAt: z.date(),
 });
+export type Attribute = z.infer<typeof attributeSchema>;
 
 export const createAttributeSchema = attributeSchema.omit({
     id: true,
@@ -23,18 +29,11 @@ export const createAttributeSchema = attributeSchema.omit({
     updatedAt: true,
     trashBin: true,
 });
-
-
-export type Attribute = z.infer<typeof attributeSchema>;
 export type CreateAttribute = z.infer<typeof createAttributeSchema>;
 
+
 export const attributeWithValuesSchema = attributeSchema.extend({
-    values: z.array(z.union([
-            numberValueSchema,
-            textValueSchema, 
-            dateValueSchema,
-            metricValueSchema
-        ])).default([])
+    values: z.array(attributeValueSchema).default([])
 });
 
 export type AttributeWithValues = z.infer<typeof attributeWithValuesSchema>;
