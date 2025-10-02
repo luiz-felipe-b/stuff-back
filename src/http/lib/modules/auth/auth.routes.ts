@@ -10,7 +10,7 @@ import { authRouteDocs } from "./docs/auth.doc.js";
 import { db } from "../../../../db/connection.js";
 
 export async function authRoutes(app: FastifyTypedInstance) {
-    const refreshTokenRepository = new RefreshTokenRepository();
+    const refreshTokenRepository = new RefreshTokenRepository(db);
     const userRepository = new UserRepository(db);
     const passwordResetTokenRepository = new PasswordResetTokenRepository(db);
     const emailService = new EmailService();

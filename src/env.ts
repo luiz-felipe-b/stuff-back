@@ -11,6 +11,8 @@ const envSchema = z.object({
     BREVO_API_KEY: z.string(),
     SWAGGER_USERNAME: z.string(),
     SWAGGER_PASSWORD: z.string(),
+    AWS_PROFILE: z.string().default('default'),
+    AWS_REGION: z.string().default('us-east-1'),
     REQUIRE_AUTH: z.string().default('true'),
 });
 
