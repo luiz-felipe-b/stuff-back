@@ -39,5 +39,10 @@ export async function assetsRoutes(app: FastifyTypedInstance) {
         onRequest: [app.authenticate],
         schema: assetRouteDocs.deleteAsset,
     }, assetsController.deleteAsset.bind(assetsController));
-    
+
+    // Set asset trashBin field
+    app.patch('/:id/trash-bin', {
+        onRequest: [app.authenticate],
+        schema: assetRouteDocs.setAssetTrashBin,
+    }, assetsController.setAssetTrashBin.bind(assetsController));
 }

@@ -153,4 +153,32 @@ export class OrganizationController extends Controller {
 
         return reply.code(200).send({ data: assets, message: 'Organization assets found' });
     }
+
+        async activateOrganization(request: FastifyRequest, reply: FastifyReply) {
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+        const { id } = params.data;
+        const updated = await this.organizationService.activateOrganization(id);
+        if (!updated) throw new NotFoundError('Organization not found', 404);
+        return reply.code(200).send({ data: updated, message: 'Organization activated' });
+    }
+
+    async deactivateOrganization(request: FastifyRequest, reply: FastifyReply) {
+        const params = organizationIdParamSchema.safeParse(request.params);
+        if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+        const { id } = params.data;
+        const updated = await this.organizationService.deactivateOrganization(id);
+        if (!updated) throw new NotFoundError('Organization not found', 404);
+        return reply.code(200).send({ data: updated, message: 'Organization deactivated' });
+    }
+
+    async getUserOrganizations(request: FastifyRequest, reply: FastifyReply) {
+        return this.handleRequest(request, reply, async () => {
+            const params = z.object({ userId: z.string().min(1, { message: 'User ID is required' }) }).safeParse(request.params);
+            if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+            const { userId } = params.data;
+            const orgs = await this.organizationService.getUserOrganizations(userId);
+            return reply.code(200).send({ data: orgs, message: 'User organizations found' });
+        });
+    }
 }

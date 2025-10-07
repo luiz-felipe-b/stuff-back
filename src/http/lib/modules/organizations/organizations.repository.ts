@@ -1,3 +1,4 @@
+
 import { and, eq } from "drizzle-orm/pg-core/expressions";
 import { db } from "../../../../db/connection";
 import { organizations } from "../../../../db/schemas/organizations.schema";
@@ -178,6 +179,33 @@ export class OrganizationRepository {
          .select()
          .from(assets)
          .where(eq(assets.organizationId, organizationId));
+      return result;
+   }
+
+   
+   async setActive(id: string, active: boolean): Promise<PublicOrganization> {
+      const [result] = (await this.db
+         .update(organizations)
+         .set({ active })
+         .where(eq(organizations.id, id))
+         .returning()) as PublicOrganization[];
+      return result;
+   }
+
+   async getOrganizationsByUserId(userId: string): Promise<PublicOrganization[]> {
+      const result = await this.db
+         .select({
+            id: organizations.id,
+            name: organizations.name,
+            slug: organizations.slug,
+            description: organizations.description,
+            active: organizations.active,
+            createdAt: organizations.createdAt,
+            updatedAt: organizations.updatedAt
+         })
+         .from(organizations)
+         .innerJoin(usersOrganizations, eq(organizations.id, usersOrganizations.organizationId))
+         .where(and(eq(usersOrganizations.userId, userId), eq(organizations.active, true)));
       return result;
    }
 }

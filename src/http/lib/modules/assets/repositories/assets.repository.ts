@@ -56,4 +56,14 @@ export class AssetsRepository {
         const result = await this.db.delete(assets).where(eq(assets.id, assetId));
         return result.rowCount > 0;
     }
+
+    // Set the trashBin field for an asset
+    async setAssetTrashBin(assetId: string, trashBin: boolean): Promise<Asset | null> {
+        const [result] = (await this.db
+            .update(assets)
+            .set({ trashBin, updatedAt: new Date() })
+            .where(eq(assets.id, assetId))
+            .returning()) as Asset[];
+        return result || null;
+    }
 }

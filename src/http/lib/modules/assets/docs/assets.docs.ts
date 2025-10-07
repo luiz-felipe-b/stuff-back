@@ -109,4 +109,26 @@ export const assetRouteDocs = {
         },
         security: [{ bearerAuth: [] }]
     },
+    setAssetTrashBin: {
+        description: 'Set the trashBin field for an asset',
+        tags: ['assets'],
+        params: z.object({
+            id: z.string({ message: 'Asset ID is required' }).uuid({ message: 'Asset ID must be a valid UUID' })
+        }),
+        body: z.object({
+            trashBin: z.boolean()
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Asset trashBin set'),
+                data: assetSchema
+            }).describe('Asset trashBin set'),
+            400: commonErrorResponses[400],
+            401: commonErrorResponses[401],
+            403: commonErrorResponses[403],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }]
+    },
 }

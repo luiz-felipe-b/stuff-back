@@ -94,7 +94,7 @@ export class AttributesService {
 
     async createAttributeValue(data: any): Promise<any> {
         // Validate input (can use Zod schemas for each type if needed)
-        if (!data.assetInstanceId || !data.attributeId || typeof data.value === 'undefined') {
+        if (!data.assetId || !data.attributeId || typeof data.value === 'undefined') {
             throw new BadRequestError('Invalid attribute value data', 400);
         }
         // Optionally validate type/unit/options here
@@ -102,7 +102,7 @@ export class AttributesService {
             id: uuidv4(),
             createdAt: new Date(),
             updatedAt: new Date(),
-            assetId: data.assetId,
+            assetInstanceId: data.assetId,
             attributeId: data.attributeId,
             value: data.value
         };

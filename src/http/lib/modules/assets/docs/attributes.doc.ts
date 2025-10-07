@@ -120,14 +120,12 @@ export const attributesRoutesDocs = {
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Attribute created successfully'),
-                data: z.object({
-                    attribute: attributeSchema.omit({
+                data: attributeSchema.omit({
                         createdAt: true,
                         updatedAt: true,
                         trashBin: true,
                         authorId: true,
                     })
-                })
             }).describe('Attribute created successfully'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],

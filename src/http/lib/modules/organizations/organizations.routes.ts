@@ -61,4 +61,19 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     onRequest: [app.authenticate],
     schema: organizationRouteDocs.getOrganizationAssets,
   }, organizationController.getOrganizationAssets.bind(organizationController));
+
+    app.patch('/:id/activate', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.activateOrganization
+  }, organizationController.activateOrganization.bind(organizationController));
+
+  app.patch('/:id/deactivate', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.deactivateOrganization
+  }, organizationController.deactivateOrganization.bind(organizationController));
+
+    app.get('/users/:userId/organizations', {
+      onRequest: [app.authenticate],
+      schema: organizationRouteDocs.getUserOrganizations
+    }, organizationController.getUserOrganizations.bind(organizationController));
 }

@@ -88,7 +88,7 @@ export async function appSetup(app: FastifyInstance) {
     app.decorate('authenticate', async (req: FastifyRequest, reply: FastifyReply) => {
         if (!features.requireAuth) {
             // Use the same admin user as seeded in the database
-            req.user = { id: '00000000-0000-0000-0000-000000000001', email: 'admin@example.com', role: 'admin' };
+            req.user = { id: '00000000-0000-0000-0000-000000000000', email: 'admin@example.com', role: 'admin' };
             return;
         }
         const authHeaderSchema = z.string().regex(/^Bearer\s.+$/);

@@ -100,20 +100,31 @@ export class AssetsService {
             type: assetRow.type,
             attributes: []
         };
-        // Collect attributes, each with a value property containing the full attribute value object
-        const attributes: any[] = [];
-        console.log(result[0])
+        // Group attribute values by attribute id
+        const attrMap: Record<string, any> = {};
         for (const row of result) {
             if (row.attributes && row.attributes.id) {
-                const attributeObj = {
-                    ...row.attributes,
-                    value: row.attribute_values ? row.attribute_values : null
-                };
-                attributes.push(attributeObj);
+                const attrId = row.attributes.id;
+                if (!attrMap[attrId]) {
+                    attrMap[attrId] = {
+                        ...row.attributes,
+                        values: []
+                    };
+                }
+                if (row.attribute_values && row.attribute_values.id) {
+                    const val = row.attribute_values;
+                    attrMap[attrId].values.push({
+                        id: val.id,
+                        assetInstanceId: val.assetInstanceId || val.asset_id,
+                        attributeId: val.attributeId || val.attribute_id,
+                        value: val.value,
+                        createdAt: val.createdAt || val.created_at,
+                        updatedAt: val.updatedAt || val.updated_at
+                    });
+                }
             }
         }
-        asset.attributes = attributes;
-        console.log(asset);
+        asset.attributes = Object.values(attrMap);
         return asset;
     }
 
@@ -130,5 +141,14 @@ export class AssetsService {
         const deleted = await this.assetsRepository.deleteAsset(assetId);
         console.log(deleted);
         if (!deleted) throw new InternalServerError('Failed to delete asset');
+    }
+
+    // Set the trashBin field for an asset
+    async setAssetTrashBin(assetId: string, trashBin: boolean): Promise<Asset> {
+        if (!assetId) throw new BadRequestError('Asset ID is required', 400);
+        if (typeof trashBin !== 'boolean') throw new BadRequestError('trashBin must be a boolean', 400);
+        const updated = await this.assetsRepository.setAssetTrashBin(assetId, trashBin);
+        if (!updated) throw new InternalServerError('Failed to update asset trashBin');
+        return updated;
     }
 }

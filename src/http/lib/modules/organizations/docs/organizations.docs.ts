@@ -5,6 +5,62 @@ import { publicUserSchema } from "../../users/user.schema";
 import { assetSchema } from "../../assets/schemas/assets.schema";
 
 export const organizationRouteDocs = {
+
+    activateOrganization: {
+        description: 'Activate organization',
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization activated'),
+                data: publicOrganizationSchema
+            }).describe('Organization activated'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
+
+        getUserOrganizations: {
+            description: 'Get all organizations a user belongs to',
+            tags: ['organizations'],
+            params: z.object({
+                userId: z.string().min(1, { message: 'User ID is required' })
+            }),
+            response: {
+                200: commonSuccessResponses[200].extend({
+                    message: z.string().default('User organizations found'),
+                    data: z.array(publicOrganizationSchema)
+                }).describe('User organizations found'),
+                400: commonErrorResponses[400],
+                403: commonErrorResponses[403],
+                401: commonErrorResponses[401],
+                404: commonErrorResponses[404],
+                500: commonErrorResponses[500],
+            },
+            security: [{ bearerAuth: [] }],
+        },
+
+    deactivateOrganization: {
+        description: 'Deactivate organization',
+        tags: ['organizations'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization deactivated'),
+                data: publicOrganizationSchema
+            }).describe('Organization deactivated'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
     getAllOrganizations: {
         description: 'Get all organizations',
         tags: ['organizations'],

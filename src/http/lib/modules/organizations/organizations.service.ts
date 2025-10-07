@@ -112,4 +112,19 @@ export class OrganizationService {
         if (!assets) throw new NotFoundError('Organization not found', 404);
         return assets;
     }
+
+    async activateOrganization(id: string) {
+        return this.organizationRepository.setActive(id, true);
+    }
+
+    async deactivateOrganization(id: string) {
+        return this.organizationRepository.setActive(id, false);
+    }
+
+
+    async getUserOrganizations(userId: string) {
+        if (!userId) throw new BadRequestError('User ID is required');
+        const orgs = await this.organizationRepository.getOrganizationsByUserId(userId);
+        return orgs;
+    }
 }

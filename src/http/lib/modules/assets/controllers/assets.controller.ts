@@ -105,4 +105,23 @@ export class AssetsController extends Controller {
             });
         });
     }
+    // Set the trashBin field for an asset
+    async setAssetTrashBin(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+        return this.handleRequest(request, reply, async () => {
+            const paramsValidation = z.object({
+                id: z.string().uuid({ message: 'Asset ID must be a valid UUID' })
+            });
+            const validatedParams = paramsValidation.safeParse(request.params);
+            if (!validatedParams.success) throw new BadRequestError(validatedParams.error.errors[0].message);
+            const { id: assetId } = validatedParams.data;
+            const bodyValidation = z.object({ trashBin: z.boolean() }).safeParse(request.body);
+            if (!bodyValidation.success) throw new BadRequestError(bodyValidation.error.errors[0].message);
+            const { trashBin } = bodyValidation.data;
+            const result = await this.assetsService.setAssetTrashBin(assetId, trashBin);
+            return reply.code(200).send({
+                data: result,
+                message: `Asset trashBin set to ${trashBin}`,
+            });
+        });
+    }
 }

@@ -30,7 +30,11 @@ const columns = {
 
 export const users = pgTable('users', columns)
 
+
+import { assets } from './assets/assets.schema.ts';
+
 export const usersRelations = relations(users, ({ one, many }) => ({
     usersOrganizations: many(usersOrganizations),
+    assets: many(assets, { relationName: 'createdAssets' })
 }));
 

@@ -5,6 +5,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
     connectionString: env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
 export const db = dbConnect({ client: pool });
