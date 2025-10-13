@@ -9,9 +9,11 @@ import { features } from "../features";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
 import cors from '@fastify/cors'
+import fastifyMultipart from '@fastify/multipart';
 import { requestUserSchema } from "../types/http/requests";
 
 export async function appSetup(app: FastifyInstance) {
+    app.register(fastifyMultipart, { attachFieldsToBody: true });
     app.register(fastifyJwt, {
         secret: env.JWT_SECRET,
         cookie: {
@@ -44,6 +46,9 @@ export async function appSetup(app: FastifyInstance) {
                 { name: 'organizations', description: 'Organization related end-points' },
                 { name: 'assets', description: 'Assets related end-points' },
                 { name: 'attributes', description: 'Attributes related end-points' },
+                { name: 'ai', description: 'AI related end-points' },
+                { name: 'ai-functionalities', description: 'AI Functionalities related end-points' },
+                { name: 'reports', description: 'Reports related end-points' },
                 { name: 'to-do', description: 'End-points that still have work to be done' },
                 { name: 'swagger', description: 'Swagger related end-points' },
             ],

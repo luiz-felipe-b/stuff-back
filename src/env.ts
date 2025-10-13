@@ -14,6 +14,11 @@ const envSchema = z.object({
     AWS_PROFILE: z.string().default('default'),
     AWS_REGION: z.string().default('us-east-1'),
     REQUIRE_AUTH: z.string().default('true'),
+    SUPABASE_S3_ACCESS_KEY_ID: z.string().optional(),
+    SUPABASE_S3_SECRET_ACCESS_KEY: z.string().optional(),
+    SUPABASE_URL: z.string().optional(),
+    SUPABASE_BUCKET: z.string().optional(),
+    SUPABASE_BUCKET_REGION: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);
