@@ -273,4 +273,30 @@ export const organizationRouteDocs = {
         },
         security: [{ bearerAuth: [] }],
     },
+
+    getOrganizationReports: {
+        description: 'Get all reports for an organization',
+        tags: ['organizations', 'reports'],
+        params: organizationIdParamSchema,
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Organization reports found'),
+                data: z.array(z.object({
+                    id: z.string().uuid(),
+                    authorId: z.string().uuid().nullable().optional(),
+                    organizationId: z.string().uuid(),
+                    title: z.string(),
+                    file_url: z.string().url().nullable().optional(),
+                    createdAt: z.string(),
+                    updatedAt: z.string(),
+                }))
+            }).describe('Organization reports found'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
 }

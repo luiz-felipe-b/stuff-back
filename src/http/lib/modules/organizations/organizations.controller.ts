@@ -181,4 +181,14 @@ export class OrganizationController extends Controller {
             return reply.code(200).send({ data: orgs, message: 'User organizations found' });
         });
     }
+
+    async getOrganizationReports(request: FastifyRequest, reply: FastifyReply) {
+        return this.handleRequest(request, reply, async () => {
+            const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+            if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+            const { id } = params.data;
+            const reports = await this.organizationService.getOrganizationReports(id);
+            return reply.code(200).send({ data: reports, message: 'Organization reports found' });
+        });
+    }
 }

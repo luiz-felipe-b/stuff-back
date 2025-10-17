@@ -1,4 +1,3 @@
-
 import { and, eq } from "drizzle-orm/pg-core/expressions";
 import { db } from "../../../../db/connection";
 import { organizations } from "../../../../db/schemas/organizations.schema";
@@ -9,10 +8,11 @@ import { users, userTiers } from "../../../../db/schemas/users.schema";
 import { usersOrganizations } from "../../../../db/schemas/users-organizations.schema";
 import { assets } from "../../../../db/schemas/assets/assets.schema";
 import { Asset, assetSchema } from "../assets/schemas/assets.schema";
+import { reports } from "../../../../db/schemas/reports.schema";
 
 export class OrganizationRepository {
    constructor(private readonly db: Database | Transaction) { }
-
+   
    async getAll(): Promise<PublicOrganization[]> {
       const result = await this.db.select().from(organizations);
       return result;
@@ -179,8 +179,8 @@ export class OrganizationRepository {
          .select()
          .from(assets)
          .where(eq(assets.organizationId, organizationId));
-      return result;
-   }
+         return result;
+      }
 
    
    async setActive(id: string, active: boolean): Promise<PublicOrganization> {
@@ -207,5 +207,14 @@ export class OrganizationRepository {
          .innerJoin(usersOrganizations, eq(organizations.id, usersOrganizations.organizationId))
          .where(and(eq(usersOrganizations.userId, userId), eq(organizations.active, true)));
       return result;
+   }
+   
+   async getReportsByOrganizationId(organizationId: string) {
+      const result = await this.db.select().from(reports).where(eq(reports.organizationId, organizationId));
+      return result.map(report => ({
+         ...report,
+         createdAt: report.createdAt instanceof Date ? report.createdAt.toISOString() : report.createdAt,
+         updatedAt: report.updatedAt instanceof Date ? report.updatedAt.toISOString() : report.updatedAt,
+      }));
    }
 }

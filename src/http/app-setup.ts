@@ -9,11 +9,9 @@ import { features } from "../features";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
 import cors from '@fastify/cors'
-import fastifyMultipart from '@fastify/multipart';
 import { requestUserSchema } from "../types/http/requests";
 
 export async function appSetup(app: FastifyInstance) {
-    app.register(fastifyMultipart, { attachFieldsToBody: true });
     app.register(fastifyJwt, {
         secret: env.JWT_SECRET,
         cookie: {

@@ -9,7 +9,7 @@ import { NotFoundError } from '../../util/errors/not-found.error';
 
 export class OrganizationService {
     private organizationRepository: OrganizationRepository;
-
+    
     constructor(organizationRepository: OrganizationRepository) {
         this.organizationRepository = organizationRepository;
     }
@@ -17,7 +17,7 @@ export class OrganizationService {
     async getAllOrganizations() {
         return this.organizationRepository.getAll();
     }
-
+    
     async getOrganizationByIdentifier(identifier: string) {
         const uuidValidator = z.string().uuid();
         const isUUID = uuidValidator.safeParse(identifier).success;
@@ -50,7 +50,7 @@ export class OrganizationService {
         if (!ownerRelation) throw new HttpError('InternalServerError', 'Failed to add owner to organization', 500);
         return organization;
     }
-
+    
     async updateOrganization(id: string, data: Partial<UpdateOrganization>) {
         const updatedData = {
             id,
@@ -60,13 +60,13 @@ export class OrganizationService {
         if (data.password) updatedData.password = await hashPassword(data.password);
         return this.organizationRepository.update(updatedData);
     }
-
+    
     async deleteOrganization(id: string) {
         const organization = await this.organizationRepository.delete(id);
         if (!organization) throw new NotFoundError('Could not find organization with the given ID');
         return organization;
     }
-
+    
     async getOrganizationMembers(id: string) {
         const members = await this.organizationRepository.getMembersByOrganizationId(id);
         if (!members) throw new NotFoundError('Organization not found', 404);
@@ -94,7 +94,7 @@ export class OrganizationService {
 
         return [updatedMember];
     }
-
+    
     async deleteOrganizationMember(organizationId: string, userId: string) {
         if (!organizationId || !userId) throw new BadRequestError('Organization ID and User ID are required');
         const organization = await this.organizationRepository.getById(organizationId);
@@ -116,11 +116,15 @@ export class OrganizationService {
     async activateOrganization(id: string) {
         return this.organizationRepository.setActive(id, true);
     }
-
+    
     async deactivateOrganization(id: string) {
         return this.organizationRepository.setActive(id, false);
     }
-
+    
+    async getOrganizationReports(id: string) {
+        const reports = await this.organizationRepository.getReportsByOrganizationId(id);
+        return reports;
+    }
 
     async getUserOrganizations(userId: string) {
         if (!userId) throw new BadRequestError('User ID is required');

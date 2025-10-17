@@ -20,7 +20,12 @@ export class ReportsRepository {
   }
 
   async findAll() {
-    return db.select().from(reports);
+    const results = await db.select().from(reports);
+    return results.map(report => ({
+      ...report,
+      createdAt: report.createdAt instanceof Date ? report.createdAt.toISOString() : report.createdAt,
+      updatedAt: report.updatedAt instanceof Date ? report.updatedAt.toISOString() : report.updatedAt,
+    }));
   }
 
   async findById(id: string) {
