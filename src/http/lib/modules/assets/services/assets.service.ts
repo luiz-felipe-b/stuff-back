@@ -14,20 +14,21 @@ export class AssetsService {
     async createAsset(data: CreateAsset): Promise<Asset> {
         const dataValidation = createAssetSchema.safeParse(data);
         if (!dataValidation.success) throw new BadRequestError('Invalid asset instance data', 400);
-        const { type, quantity, templateId, organizationId, creatorUserId, name, description } = data;
-
-        const result = await this.assetsRepository.createAsset({
+        if (!data.creatorUserId) throw new BadRequestError('creatorUserId is required', 400);
+        // Use snake_case for DB fields
+        const assetToInsert = {
             id: uuidv4(),
-            type,
-            quantity: quantity || null,
-            organizationId: organizationId || null,
-            creatorUserId,
-            name,
-            description: description || "Default description",
+            type: data.type,
+            quantity: data.quantity || null,
+            organizationId: data.organizationId || null,
+            creatorUserId: data.creatorUserId,
+            name: data.name,
+            description: data.description || "Default description",
             trashBin: false,
             createdAt: new Date(),
             updatedAt: new Date()
-        });
+        };
+        const result = await this.assetsRepository.createAsset(assetToInsert);
         if (!result) throw new InternalServerError("Failed to create asset instance");
         return result;
     }
