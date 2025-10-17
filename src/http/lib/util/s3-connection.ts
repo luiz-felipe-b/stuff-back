@@ -1,4 +1,5 @@
 import { S3Client, ListObjectsV2Command, ListObjectsV2CommandInput, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "../../../env";
 
 // Configure com suas credenciais do Supabase Storage S3
@@ -36,4 +37,17 @@ export async function uploadSupabaseS3Object(bucket: string, key: string, buffer
   await supabaseS3Client.send(command);
   // Construct public URL (adjust if your Supabase S3 public URL differs)
   return `https://gjmocpoedcoiaxpsnavp.storage.supabase.co/storage/v1/object/public/${bucket}/${key}`;
+}
+
+/**
+ * Delete an object from Supabase S3 bucket
+ * @param bucket Nome do bucket
+ * @param key Caminho/arquivo
+ */
+export async function deleteSupabaseS3Object(bucket: string, key: string): Promise<void> {
+  const command = new DeleteObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
+  await supabaseS3Client.send(command);
 }

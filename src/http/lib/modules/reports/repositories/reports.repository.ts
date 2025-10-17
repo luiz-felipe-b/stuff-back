@@ -2,6 +2,7 @@ import { db } from "../../../../../db/connection";
 import { reports } from "../../../../../db/schemas/reports.schema";
 import { eq } from "drizzle-orm";
 import { InsertReportDatabase, UpdateReport } from "../schemas/reports.schema";
+// S3 deletion logic moved to service layer
 
 export class ReportsRepository {
   async create(data: InsertReportDatabase) {
