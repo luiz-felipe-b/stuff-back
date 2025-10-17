@@ -14,46 +14,44 @@ export class ReportsController {
   async getPresignedUrl(request: FastifyRequest, reply: FastifyReply) {
     const { filename } = request.body as { filename?: string };
     if (!filename) {
-      return reply.code(400).send({ error: "filename é obrigatório" });
+      return reply.code(400).send({ message: "filename é obrigatório", data: null });
     }
     const bucket = "stuff-app"; // ajuste se necessário
     const s3Key = `reports/${Date.now()}_${filename}`;
     const url = await generatePresignedUploadUrl(bucket, s3Key);
-    return reply.send({ url, key: s3Key });
+    return reply.send({ message: "Presigned URL generated", data: { url, key: s3Key } });
   }
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     const data = createReportSchema.parse(request.body);
     if (!data.key || typeof data.key !== "string") {
-      return reply.code(400).send({ error: "key é obrigatório" });
+      return reply.code(400).send({ message: "key é obrigatório", data: null });
     }
-    // const data = { ...rest, fileUrl };
-    // const parsed = createReportSchema.parse();
     const report = await this.service.create(data);
-    return reply.code(201).send(report);
+    return reply.code(201).send({ message: "Report created", data: report });
   }
 
   async findAll(request: FastifyRequest, reply: FastifyReply) {
     const reports = await this.service.findAll();
-    return reply.send(reports);
+    return reply.send({ message: "Reports found", data: reports });
   }
 
   async findById(request: FastifyRequest, reply: FastifyReply) {
     const { id } = reportIdSchema.parse(request.params);
     const report = await this.service.findById(id);
-    return reply.send(report);
+    return reply.send({ message: "Report found", data: report });
   }
 
   async update(request: FastifyRequest, reply: FastifyReply) {
     const { id } = reportIdSchema.parse(request.params);
     const data = updateReportSchema.parse(request.body);
     const updated = await this.service.update(id, data);
-    return reply.send(updated);
+    return reply.send({ message: "Report updated", data: updated });
   }
 
   async delete(request: FastifyRequest, reply: FastifyReply) {
     const { id } = reportIdSchema.parse(request.params);
     await this.service.delete(id);
-    return reply.code(204).send();
+    return reply.code(200).send({ message: "Report deleted", data: null });
   }
 }

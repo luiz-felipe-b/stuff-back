@@ -11,13 +11,23 @@ export const reportSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const reportResponseSchema = z.object({
+  message: z.string(),
+  data: reportSchema.or(z.array(reportSchema)).or(z.null()),
+});
+
+export const reportListResponseSchema = z.object({
+  message: z.string(),
+  data: z.array(reportSchema),
+});
+
 export const reportRouteDocs = {
   create: {
     tags: ["reports"],
     summary: "Create a report",
-    body: createReportSchema, // agora espera { key }
+    body: createReportSchema,
     response: {
-      201: reportSchema,
+      201: reportResponseSchema,
     },
     description: "O cliente deve enviar apenas a chave S3 do arquivo (key), não a URL. O backend monta a URL final.",
   },
@@ -25,7 +35,7 @@ export const reportRouteDocs = {
     tags: ["reports"],
     summary: "List all reports",
     response: {
-      200: z.array(reportSchema),
+      200: reportListResponseSchema,
     },
   },
   findById: {
@@ -33,7 +43,7 @@ export const reportRouteDocs = {
     summary: "Get report by id",
     params: z.object({ id: z.string().uuid() }),
     response: {
-      200: reportSchema,
+      200: reportResponseSchema,
     },
   },
   update: {
@@ -42,7 +52,7 @@ export const reportRouteDocs = {
     params: z.object({ id: z.string().uuid() }),
     body: updateReportSchema,
     response: {
-      200: reportSchema,
+      200: reportResponseSchema,
     },
   },
   delete: {
@@ -50,7 +60,7 @@ export const reportRouteDocs = {
     summary: "Delete a report",
     params: z.object({ id: z.string().uuid() }),
     response: {
-      204: z.null(),
+      200: z.object({ message: z.string(), data: z.null() }),
     },
   },
   presignedUrl: {
@@ -60,13 +70,8 @@ export const reportRouteDocs = {
       filename: z.string().min(1).describe("Original filename of the report file"),
     }),
     response: {
-      200: z.object({
-        url: z.string().url().describe("Presigned URL for file upload"),
-        key: z.string().describe("S3 object key where the file should be uploaded"),
-      }),
-      400: z.object({
-        error: z.string().describe("Error message"),
-      }),
+      200: z.object({ message: z.string(), data: z.object({ url: z.string().url(), key: z.string() }) }),
+      400: z.object({ message: z.string(), data: z.null() }),
     },
   },
 };
