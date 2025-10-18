@@ -12,6 +12,7 @@ import { db } from "../../../../db/connection.ts";
 import { BadRequestError } from "../../util/errors/bad-request.error.ts";
 import { NotFoundError } from "../../util/errors/not-found.error.ts";
 import { UnauthorizedError } from "../../util/errors/unauthorized.error.ts";
+import { env } from "../../../../env.ts";
 
 export class AuthService {
     constructor(
@@ -129,7 +130,7 @@ export class AuthService {
 
         await this.emailService.sendEmail({
             subject: '🔒 Password Reset Request',
-            htmlContent: `<p>Here's your password reset token ${resetToken}</p>`,
+            htmlContent: `<p>Here's your password reset link: <a href="${env.FRONTEND_URL}/reset-password?token=${resetToken}">CLICK ME</a></p>`,
             sender: { name: 'Support Team', email: 'lfbalaminute@hotmail.com' },
             to: [{ email: email }],
         });

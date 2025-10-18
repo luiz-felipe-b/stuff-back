@@ -19,6 +19,7 @@ const envSchema = z.object({
     SUPABASE_URL: z.string().optional(),
     SUPABASE_BUCKET: z.string().optional(),
     SUPABASE_BUCKET_REGION: z.string().optional(),
+    FRONTEND_URL: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

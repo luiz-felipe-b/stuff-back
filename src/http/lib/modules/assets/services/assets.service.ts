@@ -23,7 +23,7 @@ export class AssetsService {
             organizationId: data.organizationId || null,
             creatorUserId: data.creatorUserId,
             name: data.name,
-            description: data.description || "Default description",
+            description: data.description || "",
             trashBin: false,
             createdAt: new Date(),
             updatedAt: new Date()
