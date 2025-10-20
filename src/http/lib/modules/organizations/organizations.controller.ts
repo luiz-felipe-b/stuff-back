@@ -7,6 +7,7 @@ import app from "../../../app";
 import { organizationIdentifierParamSchema, organizationIdParamSchema, updateOrganizationSchema } from "./organizations.schema";
 import { BadRequestError } from "../../util/errors/bad-request.error";
 import { NotFoundError } from "../../util/errors/not-found.error";
+import { env } from "../../../../env";
 
 export class OrganizationController extends Controller {
     private organizationService: OrganizationService;
@@ -25,7 +26,7 @@ export class OrganizationController extends Controller {
             const validated = bodySchema.safeParse(request.body);
             if (!validated.success) throw new BadRequestError('Invalid email or organizationId');
             // You may want to get frontendBaseUrl from env or config
-            const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'https://app.stuff-app.com';
+            const frontendBaseUrl = env.FRONTEND_URL;
             const sent = await this.organizationService.sendOrganizationInvite(validated.data.email, validated.data.organizationId, frontendBaseUrl);
             if (!sent) throw new Error('Failed to send invite email');
             return reply.code(200).send({ message: 'Invite email sent', data: null });
