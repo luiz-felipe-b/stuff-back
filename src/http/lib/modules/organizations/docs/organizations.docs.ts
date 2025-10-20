@@ -6,6 +6,27 @@ import { assetSchema } from "../../assets/schemas/assets.schema";
 
 export const organizationRouteDocs = {
 
+    sendOrganizationInvite: {
+        description: 'Send an email invitation to add a user to an organization',
+        tags: ['organizations'],
+        body: z.object({
+            email: z.string().email(),
+            organizationId: z.string().uuid(),
+        }),
+        response: {
+            200: commonSuccessResponses[200].extend({
+                message: z.string().default('Invite email sent'),
+                data: z.null()
+            }).describe('Invite email sent'),
+            400: commonErrorResponses[400],
+            403: commonErrorResponses[403],
+            401: commonErrorResponses[401],
+            404: commonErrorResponses[404],
+            500: commonErrorResponses[500],
+        },
+        security: [{ bearerAuth: [] }],
+    },
+
     activateOrganization: {
         description: 'Activate organization',
         tags: ['organizations'],

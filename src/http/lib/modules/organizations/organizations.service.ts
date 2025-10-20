@@ -1,3 +1,4 @@
+import { EmailService } from '../../util/email/email.service';
 import { z } from 'zod';
 import { OrganizationRepository } from './organizations.repository';
 import { HttpError } from '../../util/errors/http.error';
@@ -130,5 +131,24 @@ export class OrganizationService {
         if (!userId) throw new BadRequestError('User ID is required');
         const orgs = await this.organizationRepository.getOrganizationsByUserId(userId);
         return orgs;
+    }
+
+    async sendOrganizationInvite(email: string, organizationId: string, frontendBaseUrl: string): Promise<boolean> {
+        if (!email || !organizationId) throw new BadRequestError('Email and organizationId are required');
+        // Optionally, validate organization exists
+        const organization = await this.organizationRepository.getById(organizationId);
+        if (!organization) throw new NotFoundError('Organization not found', 404);
+        // Compose invite link
+        const inviteUrl = `${frontendBaseUrl}/organization/accept?org=${organizationId}&email=${encodeURIComponent(email)}`;
+        const subject = `Convite para entrar na organização ${organization.name}`;
+        const htmlContent = `<p>Você foi convidado para entrar na organização <b>${organization.name}</b>.</p>
+            <p><a href="${inviteUrl}" style="background:#2563eb;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Aceitar convite</a></p>`;
+        const emailService = new EmailService();
+        return await emailService.sendEmail({
+            sender: { email: 'lfbalaminute@hotmail.com', name: 'Stuff App' },
+            to: [{ email }],
+            subject,
+            htmlContent
+        });
     }
 }

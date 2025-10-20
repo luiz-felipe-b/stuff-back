@@ -1,3 +1,4 @@
+
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Controller } from "../../common/controllers/controller";
 import { OrganizationService } from "./organizations.service";
@@ -13,6 +14,22 @@ export class OrganizationController extends Controller {
     constructor(organizationService: OrganizationService) {
         super();
         this.organizationService = organizationService;
+    }
+
+    async sendOrganizationInvite(request: FastifyRequest, reply: FastifyReply) {
+        return this.handleRequest(request, reply, async () => {
+            const bodySchema = z.object({
+                email: z.string().email(),
+                organizationId: z.string().uuid(),
+            });
+            const validated = bodySchema.safeParse(request.body);
+            if (!validated.success) throw new BadRequestError('Invalid email or organizationId');
+            // You may want to get frontendBaseUrl from env or config
+            const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'https://app.stuff-app.com';
+            const sent = await this.organizationService.sendOrganizationInvite(validated.data.email, validated.data.organizationId, frontendBaseUrl);
+            if (!sent) throw new Error('Failed to send invite email');
+            return reply.code(200).send({ message: 'Invite email sent', data: null });
+        });
     }
 
     async getAllOrganizations(request:FastifyRequest, reply:FastifyReply) {

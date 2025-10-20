@@ -81,4 +81,9 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     onRequest: [app.authenticate],
     schema: organizationRouteDocs.getOrganizationReports
   }, organizationController.getOrganizationReports.bind(organizationController));
+
+  app.post('/invite-member', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.sendOrganizationInvite
+  }, organizationController.sendOrganizationInvite.bind(organizationController));
 }
