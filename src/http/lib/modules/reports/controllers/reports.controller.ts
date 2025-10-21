@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { ReportsService } from "../services/reports.service";
 import { createReportSchema, updateReportSchema, reportIdSchema } from "../schemas/reports.schema";
-import { generatePresignedUploadUrl } from "../../../util/s3-presign";
+import { generatePresignedDownloadUrl, generatePresignedUploadUrl } from "../../../util/s3-presign";
 import { env } from "../../../../../env";
 
 export class ReportsController {
@@ -11,7 +11,7 @@ export class ReportsController {
    * Gera uma presigned URL para upload de CSV no S3
    * Body esperado: { filename: string }
    */
-  async getPresignedUrl(request: FastifyRequest, reply: FastifyReply) {
+  async getUploadUrl(request: FastifyRequest, reply: FastifyReply) {
     const { filename } = request.body as { filename?: string };
     if (!filename) {
       return reply.code(400).send({ message: "filename é obrigatório", data: null });
@@ -21,6 +21,18 @@ export class ReportsController {
     const url = await generatePresignedUploadUrl(bucket, s3Key);
     return reply.send({ message: "Presigned URL generated", data: { url, key: s3Key } });
   }
+
+  async getDownloadUrl(request: FastifyRequest, reply: FastifyReply) {
+    const { key } = request.query as { key?: string };
+    if (!key) {
+      return reply.code(400).send({ message: "key é obrigatório", data: null });
+    }
+    const bucket = "stuff-app"; // ajuste se necessário
+    const url = await generatePresignedDownloadUrl(bucket, key);
+    return reply.send({ message: "Presigned URL generated", data: { url } });
+  }
+
+
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     const data = createReportSchema.parse(request.body);

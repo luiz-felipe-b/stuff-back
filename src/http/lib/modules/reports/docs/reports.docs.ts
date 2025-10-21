@@ -63,7 +63,7 @@ export const reportRouteDocs = {
       200: z.object({ message: z.string(), data: z.null() }),
     },
   },
-  presignedUrl: {
+  presignedUrlUpload: {
     tags: ["reports"],
     summary: "Generate a presigned URL for uploading a report file to S3",
     body: z.object({
@@ -71,6 +71,17 @@ export const reportRouteDocs = {
     }),
     response: {
       200: z.object({ message: z.string(), data: z.object({ url: z.string().url(), key: z.string() }) }),
+      400: z.object({ message: z.string(), data: z.null() }),
+    },
+  },
+  presignedUrlDownload: {
+    tags: ["reports"],
+    summary: "Generate a presigned URL for downloading a report file from S3",
+    querystring: z.object({
+      key: z.string().min(1).describe("S3 key of the report file"),
+    }),
+    response: {
+      200: z.object({ message: z.string(), data: z.object({ url: z.string().url() }) }),
       400: z.object({ message: z.string(), data: z.null() }),
     },
   },
