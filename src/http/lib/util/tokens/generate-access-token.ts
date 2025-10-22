@@ -3,6 +3,6 @@ import { AccessTokenPayload } from "../../../../types/http/tokens";
 
 export function generateAccessToken(app: FastifyInstance, data: AccessTokenPayload) {
     return app.jwt.sign(data, {
-        expiresIn: '5s',
+        expiresIn: '15m',
     });
 }
