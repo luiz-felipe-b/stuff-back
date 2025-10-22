@@ -26,7 +26,7 @@ export async function appSetup(app: FastifyInstance) {
     app.register(fastifyCookie);
 
     app.register(cors, {
-        origin: '*',
+        origin: env.FRONTEND_URL, // your frontend URL
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     })
@@ -89,7 +89,7 @@ export async function appSetup(app: FastifyInstance) {
     });
 
     app.decorate('authenticate', async (req: FastifyRequest, reply: FastifyReply) => {
-        if (!features.requireAuth) {
+        if (features.requireAuth === false) {
             // Use the same admin user as seeded in the database
             req.user = { id: '00000000-0000-0000-0000-000000000000', email: 'admin@example.com', role: 'admin' };
             return;

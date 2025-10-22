@@ -84,12 +84,13 @@ export class AuthService {
             refreshToken: z.string(),
         });
         const validation = requestSchema.safeParse(req.cookies);
-        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
+        if (!validation.success) throw new BadRequestError(`Missing or invalid parameters ${validation.error.message}`);
 
         const jwtSchema = z.object({
             id: z.string(),
         });
         const { refreshToken } = validation.data;
+        console.log('Refresh Token:', refreshToken);
         const refreshTokenValidation = jwtSchema.safeParse(app.jwt.verify(refreshToken));
         if (!refreshTokenValidation.success) throw new UnauthorizedError('Invalid token');
 

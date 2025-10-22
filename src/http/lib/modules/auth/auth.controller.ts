@@ -17,7 +17,7 @@ export class AuthController extends Controller {
             reply
                 .setCookie('refreshToken', tokens.refreshToken, {
                     httpOnly: true,
-                    secure: true,
+                    secure: true, // Use true in production, false in dev
                     sameSite: 'strict',
                     path: '/'
                 })
@@ -52,6 +52,7 @@ export class AuthController extends Controller {
 
     async refreshToken(req: FastifyRequest, reply: FastifyReply): Promise<void> {
         return this.handleRequest(req, reply, async () => {
+            console.log(req.cookies);
             const tokens = await this.authService.refreshToken(req);
             reply.send({ accessToken: tokens.accessToken });
             return reply;

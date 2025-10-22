@@ -1,3 +1,4 @@
+
 import { CreateUserSchema, PublicUser, UpdateUserSchema, User } from "./user.schema";
 import { UserRepository } from "./repositories/users.repository";
 import { z } from "zod";
@@ -15,33 +16,25 @@ import { BadRequestError } from "../../util/errors/bad-request.error";
  * @param userRepository - Repositório de Usuário
  */
 export class UserService {
-    constructor(private userRepository: UserRepository) {}
+
+    constructor(private userRepository: UserRepository) { }
 
     /**
      * Obtém um usuário por um identificador (ID ou email)
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async getUserByIdentifier(identifier: string): Promise<PublicUser | null> {
+    async getUserById(id: string): Promise<PublicUser | null> {
         const uuidValidator = z.string().uuid();
-        const isUUID = uuidValidator.safeParse(identifier).success;
+        const isUUID = uuidValidator.safeParse(id).success;
         if (isUUID) {
-            const idResult = await this.userRepository.findById(identifier);
+            const idResult = await this.userRepository.findById(id);
             if (!idResult) {
                 throw new NotFoundError('User not found');
             }
             return idResult;
         }
-        const emailValidator = z.string().email();
-        const isEmail = emailValidator.safeParse(identifier).success;
-        if (isEmail) {
-            const emailResult = await this.userRepository.findByEmail(identifier);
-            if (!emailResult) {
-                throw new NotFoundError('User not found');
-            }
-            return emailResult;
-        }
-        throw new BadRequestError('Invalid identifier');
+        throw new BadRequestError('Invalid id');
     }
 
     /**
@@ -49,14 +42,19 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    // async getUserByEmail(email: string): Promise<PublicUser | null> {
-    //     const user = await this.userRepository.findByEmail(email);
-    //     if (!user) {
-    //         throw new HttpError('User not found', 404);
-    //     }
-    //     return user;
-    // }
-    
+    async getUserByEmail(email: string): Promise<PublicUser | null> {
+        const emailValidator = z.string().email();
+        const isEmail = emailValidator.safeParse(email).success;
+        if (isEmail) {
+            const emailResult = await this.userRepository.findByEmail(email);
+            if (!emailResult) {
+                throw new NotFoundError('User not found');
+            }
+            return emailResult;
+        }
+        throw new BadRequestError('Invalid email');
+    }
+
 
     /**
      * Obtém todos os usuários
@@ -178,7 +176,7 @@ export class UserService {
      * @param req - Requisição HTTP
      * @returns Promise<User | null>
      */
-    async updatePasswordMe(id: string, passwordData: {newPassword: string, currentPassword:string}): Promise<PublicUser | null> {
+    async updatePasswordMe(id: string, passwordData: { newPassword: string, currentPassword: string }): Promise<PublicUser | null> {
         // Se todos os parametros estiverem indefinidos, lança um erro
         if (passwordData.newPassword === undefined || passwordData.currentPassword === undefined || passwordData.newPassword === '') {
             return null;
@@ -189,7 +187,7 @@ export class UserService {
         // if (user.password !== validatedBody.data.oldPassword) {
         //     throw new Error('Old password is incorrect');
         // }
-        
+
         // Atualiza a senha do usuário
         const updatedUser = await this.userRepository.update({
             id,

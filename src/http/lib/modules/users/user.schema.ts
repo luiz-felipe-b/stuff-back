@@ -55,8 +55,8 @@ export const updatePasswordSchema = z.object({
 });
 
 // User parameters
-export const userIdentifierParamSchema = z.object({
-    identifier: z.string()
+export const userIdParamSchema = z.object({
+    id: z.string()
 });
 
 export const refreshTokenSchema = z.object({

@@ -1,3 +1,4 @@
+
 import { UserRepository } from "./repositories/users.repository.js";
 import { UserController } from "./user.controller.js";
 import { UserService } from "./users.service.js";
@@ -17,11 +18,16 @@ export async function userRoutes(app: FastifyTypedInstance) {
         schema: userRouteDocs.getAllUsers
     }, userController.getAllUsers.bind(userController));
 
-    app.get('/:identifier', {
+    app.get('/:id', {
         onRequest: [app.authenticate],
         // preHandler: [authorizeUserAccess(['admin', 'moderator'])],
-        schema: userRouteDocs.getUserByIdentifier
-    }, userController.getUserByIdentifier.bind(userController));
+        schema: userRouteDocs.getUserById
+    }, userController.getUserById.bind(userController));
+
+    app.get('/by-email', {
+        onRequest: [app.authenticate],
+        schema: userRouteDocs.getUserByEmail
+    }, userController.getUserByEmail.bind(userController));
 
     app.get('/me', {
         onRequest: [app.authenticate],
@@ -51,7 +57,7 @@ export async function userRoutes(app: FastifyTypedInstance) {
         schema: userRouteDocs.updateMePassword
     }, userController.updateMePassword.bind(userController));
 
-    app.delete('/:identifier', {
+    app.delete('/:id', {
         onRequest: [app.authenticate],
         schema: userRouteDocs.deleteUser
     }, userController.deleteUser.bind(userController));
