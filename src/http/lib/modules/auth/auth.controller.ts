@@ -18,7 +18,7 @@ export class AuthController extends Controller {
                 .setCookie('refreshToken', tokens.refreshToken, {
                     httpOnly: true,
                     secure: true, // Use true in production, false in dev
-                    sameSite: 'strict',
+                    sameSite: 'none',
                     path: '/'
                 })
                 .send({ accessToken: tokens.accessToken });
