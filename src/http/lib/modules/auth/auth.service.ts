@@ -12,6 +12,7 @@ import { db } from "../../../../db/connection.ts";
 import { BadRequestError } from "../../util/errors/bad-request.error.ts";
 import { NotFoundError } from "../../util/errors/not-found.error.ts";
 import { UnauthorizedError } from "../../util/errors/unauthorized.error.ts";
+import { env } from "../../../../env.ts";
 
 export class AuthService {
     constructor(
@@ -83,12 +84,13 @@ export class AuthService {
             refreshToken: z.string(),
         });
         const validation = requestSchema.safeParse(req.cookies);
-        if (!validation.success) throw new BadRequestError('Missing or invalid parameters');
+        if (!validation.success) throw new BadRequestError(`Missing or invalid parameters ${validation.error.message}`);
 
         const jwtSchema = z.object({
             id: z.string(),
         });
         const { refreshToken } = validation.data;
+        console.log('Refresh Token:', refreshToken);
         const refreshTokenValidation = jwtSchema.safeParse(app.jwt.verify(refreshToken));
         if (!refreshTokenValidation.success) throw new UnauthorizedError('Invalid token');
 
@@ -129,7 +131,7 @@ export class AuthService {
 
         await this.emailService.sendEmail({
             subject: '🔒 Password Reset Request',
-            htmlContent: `<p>Here's your password reset token ${resetToken}</p>`,
+            htmlContent: `<p>Here's your password reset link: <a href="${env.FRONTEND_URL}/reset-password?token=${resetToken}">CLICK ME</a></p>`,
             sender: { name: 'Support Team', email: 'lfbalaminute@hotmail.com' },
             to: [{ email: email }],
         });

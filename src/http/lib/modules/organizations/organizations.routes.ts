@@ -62,7 +62,7 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     schema: organizationRouteDocs.getOrganizationAssets,
   }, organizationController.getOrganizationAssets.bind(organizationController));
 
-    app.patch('/:id/activate', {
+  app.patch('/:id/activate', {
     onRequest: [app.authenticate],
     schema: organizationRouteDocs.activateOrganization
   }, organizationController.activateOrganization.bind(organizationController));
@@ -72,8 +72,18 @@ export async function organizationsRoutes(app: FastifyTypedInstance) {
     schema: organizationRouteDocs.deactivateOrganization
   }, organizationController.deactivateOrganization.bind(organizationController));
 
-    app.get('/users/:userId/organizations', {
-      onRequest: [app.authenticate],
-      schema: organizationRouteDocs.getUserOrganizations
-    }, organizationController.getUserOrganizations.bind(organizationController));
+  app.get('/users/:userId/organizations', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.getUserOrganizations
+  }, organizationController.getUserOrganizations.bind(organizationController));
+
+  app.get('/:id/reports', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.getOrganizationReports
+  }, organizationController.getOrganizationReports.bind(organizationController));
+
+  app.post('/invite-member', {
+    onRequest: [app.authenticate],
+    schema: organizationRouteDocs.sendOrganizationInvite
+  }, organizationController.sendOrganizationInvite.bind(organizationController));
 }

@@ -63,7 +63,7 @@ export const assetRouteDocs = {
         response: {
             200: commonSuccessResponses[200].extend({
                 message: z.string().default('Assets found'),
-                data: z.array(assetSchema)
+                data: assetSchema
             }).describe('Assets found'),
             403: commonErrorResponses[403],
             401: commonErrorResponses[401],

@@ -16,13 +16,12 @@ const envSchema = z.object({
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_REGION: z.string().default('us-east-1'),
     REQUIRE_AUTH: z.string().default('true'),
-    SUPABASE_S3_ACCESS_KEY_ID: z.string().optional(),
-    SUPABASE_S3_SECRET_ACCESS_KEY: z.string().optional(),
-    SUPABASE_URL: z.string().optional(),
-    SUPABASE_BUCKET: z.string().optional(),
-    SUPABASE_BUCKET_REGION: z.string().optional(),
-    BEDROCK_ACCESS_KEY_ID: z.string().optional(),
-    BEDROCK_SECRET_ACCESS_KEY: z.string().optional(),
+    SUPABASE_S3_ACCESS_KEY_ID: z.string(),
+    SUPABASE_S3_SECRET_ACCESS_KEY: z.string(),
+    SUPABASE_URL: z.string(),
+    SUPABASE_BUCKET: z.string(),
+    SUPABASE_BUCKET_REGION: z.string(),
+    FRONTEND_URL: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);

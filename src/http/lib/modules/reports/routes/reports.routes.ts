@@ -14,5 +14,6 @@ export async function reportsRoutes(app: FastifyInstance) {
   app.get("/:id", {onRequest: [app.authenticate], schema: reportRouteDocs.findById}, controller.findById.bind(controller));
   app.patch("/:id", {onRequest: [app.authenticate], schema: reportRouteDocs.update}, controller.update.bind(controller));
   app.delete("/:id", {onRequest: [app.authenticate], schema: reportRouteDocs.delete}, controller.delete.bind(controller));
-  app.post("/presigned-url", { onRequest: [app.authenticate], schema: reportRouteDocs.presignedUrl }, controller.getPresignedUrl.bind(controller));
+  app.post("/upload", { onRequest: [app.authenticate], schema: reportRouteDocs.presignedUrlUpload }, controller.getUploadUrl.bind(controller));
+  app.get("/download", { onRequest: [app.authenticate], schema: reportRouteDocs.presignedUrlDownload }, controller.getDownloadUrl.bind(controller));
 }

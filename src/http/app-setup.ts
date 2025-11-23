@@ -9,11 +9,9 @@ import { features } from "../features";
 import { swaggerAuth } from "./lib/util/swagger/swagger-auth";
 import { z } from "zod";
 import cors from '@fastify/cors'
-import fastifyMultipart from '@fastify/multipart';
 import { requestUserSchema } from "../types/http/requests";
 
 export async function appSetup(app: FastifyInstance) {
-    app.register(fastifyMultipart, { attachFieldsToBody: true });
     app.register(fastifyJwt, {
         secret: env.JWT_SECRET,
         cookie: {
@@ -28,7 +26,7 @@ export async function appSetup(app: FastifyInstance) {
     app.register(fastifyCookie);
 
     app.register(cors, {
-        origin: '*',
+        origin: env.FRONTEND_URL, // your frontend URL
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     })
@@ -91,11 +89,11 @@ export async function appSetup(app: FastifyInstance) {
     });
 
     app.decorate('authenticate', async (req: FastifyRequest, reply: FastifyReply) => {
-        if (!features.requireAuth) {
-            // Use the same admin user as seeded in the database
-            req.user = { id: '00000000-0000-0000-0000-000000000000', email: 'admin@example.com', role: 'admin' };
-            return;
-        }
+        // if (features.requireAuth === false) {
+        //     // Use the same admin user as seeded in the database
+        //     req.user = { id: '00000000-0000-0000-0000-000000000000', email: 'admin@example.com', role: 'admin' };
+        //     return;
+        // }
         const authHeaderSchema = z.string().regex(/^Bearer\s.+$/);
         const authHeader = req.headers.authorization;
         const authHeaderResult = authHeaderSchema.safeParse(authHeader);

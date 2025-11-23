@@ -1,3 +1,4 @@
+
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Controller } from "../../common/controllers/controller";
 import { OrganizationService } from "./organizations.service";
@@ -6,6 +7,7 @@ import app from "../../../app";
 import { organizationIdentifierParamSchema, organizationIdParamSchema, updateOrganizationSchema } from "./organizations.schema";
 import { BadRequestError } from "../../util/errors/bad-request.error";
 import { NotFoundError } from "../../util/errors/not-found.error";
+import { env } from "../../../../env";
 
 export class OrganizationController extends Controller {
     private organizationService: OrganizationService;
@@ -13,6 +15,22 @@ export class OrganizationController extends Controller {
     constructor(organizationService: OrganizationService) {
         super();
         this.organizationService = organizationService;
+    }
+
+    async sendOrganizationInvite(request: FastifyRequest, reply: FastifyReply) {
+        return this.handleRequest(request, reply, async () => {
+            const bodySchema = z.object({
+                email: z.string().email(),
+                organizationId: z.string().uuid(),
+            });
+            const validated = bodySchema.safeParse(request.body);
+            if (!validated.success) throw new BadRequestError('Invalid email or organizationId');
+            // You may want to get frontendBaseUrl from env or config
+            const frontendBaseUrl = env.FRONTEND_URL;
+            const sent = await this.organizationService.sendOrganizationInvite(validated.data.email, validated.data.organizationId, frontendBaseUrl);
+            if (!sent) throw new Error('Failed to send invite email');
+            return reply.code(200).send({ message: 'Invite email sent', data: null });
+        });
     }
 
     async getAllOrganizations(request:FastifyRequest, reply:FastifyReply) {
@@ -179,6 +197,16 @@ export class OrganizationController extends Controller {
             const { userId } = params.data;
             const orgs = await this.organizationService.getUserOrganizations(userId);
             return reply.code(200).send({ data: orgs, message: 'User organizations found' });
+        });
+    }
+
+    async getOrganizationReports(request: FastifyRequest, reply: FastifyReply) {
+        return this.handleRequest(request, reply, async () => {
+            const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+            if (!params.success) throw new BadRequestError(params.error.errors[0].message);
+            const { id } = params.data;
+            const reports = await this.organizationService.getOrganizationReports(id);
+            return reply.code(200).send({ data: reports, message: 'Organization reports found' });
         });
     }
 }

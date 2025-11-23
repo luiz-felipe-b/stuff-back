@@ -1,5 +1,6 @@
+
 import { FastifyReply, FastifyRequest } from "fastify";
-import { PublicUser, refreshTokenSchema, updateUserSchema, User, userIdentifierParamSchema } from "./user.schema.ts";
+import { PublicUser, refreshTokenSchema, updateUserSchema, User, userIdParamSchema } from "./user.schema.ts";
 import { UserService } from "./users.service.ts";
 import { Controller } from "../../common/controllers/controller";
 import { z } from "zod";
@@ -16,43 +17,35 @@ export class UserController extends Controller {
         this.userService = userService;
     }
 
-    async getUserByIdentifier(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+    async getUserById(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return await this.handleRequest(req, reply, async () => {
-            const identififierValidation = z.object({
-                identifier: z.string({message: 'Identifier needs to be a string'}).min(1, { message: 'Identifier is required' })
+            const idValidation = z.object({
+                id: z.string({message: 'Id needs to be a string'}).min(1, { message: 'Id is required' })
             });
-            const validatedIdentifier = identififierValidation.safeParse(req.params);
+            const validatedId = idValidation.safeParse(req.params);
 
-            if (!validatedIdentifier.success) throw new BadRequestError(validatedIdentifier.error.errors[0].message);
+            if (!validatedId.success) throw new BadRequestError(validatedId.error.errors[0].message);
 
-            const { identifier } = validatedIdentifier.data;
+            const { id } = validatedId.data;
 
-            const user = await this.userService.getUserByIdentifier(identifier);
+            const user = await this.userService.getUserById(id);
             return reply.code(200).send({ data: user, message: 'User found' });
         });
     }
 
-    // async getUserByEmail(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
-    //     return this.handleRequest(req, reply, async () => {
-    //         const paramsSchema = z.object({
-    //             email: z.string().email(),
-    //         })
-    
-    //         const params = paramsSchema.safeParse(req.params);
-    //         if (params.success === false) {
-    //             throw new HttpError('Invalid email', 400);
-    //         }
-    //         const { email } = params.data;
-
-    //         const user = await this.userService.getUserByEmail(email);
-
-    //         return reply.code(200).send({ data: user, message: 'User found' });
-    //     });
-    // }
-
+    async getUserByEmail(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+        return this.handleRequest(req, reply, async () => {
+            const querySchema = z.object({ email: z.string().email() });
+            const validated = querySchema.safeParse(req.query);
+            if (!validated.success) throw new BadRequestError('Invalid email');
+            const { email } = validated.data;
+            const user = await this.userService.getUserByEmail(email);
+            return reply.code(200).send({ data: user, message: 'User found' });
+        });
+    }
     async getMe(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
-            const user = await this.userService.getUserByIdentifier(req.user.id);
+            const user = await this.userService.getUserById(req.user.id);
             return reply.code(200).send({ data: user, message: 'User found' });
         });
     }
@@ -90,13 +83,13 @@ export class UserController extends Controller {
 
     async updateUser(req: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
         return this.handleRequest(req, reply, async () => {
-            const params = userIdentifierParamSchema.safeParse(req.params);
+            const params = userIdParamSchema.safeParse(req.params);
             if (!params.success) throw new BadRequestError('Missing user ID');
 
             const body = updateUserSchema.safeParse(req.body);
             if (!body.success) throw new BadRequestError('Missing or invalid parameters');
 
-            await this.userService.updateUser(params.data.identifier, body.data);
+            await this.userService.updateUser(params.data.id, body.data);
             return reply.code(200).send({ message: 'User updated' });
         });
     }
@@ -151,14 +144,14 @@ export class UserController extends Controller {
 
     async deleteUser(req: FastifyRequest, reply: FastifyReply): Promise<User> {
         return this.handleRequest(req, reply, async () => {
-            const params = userIdentifierParamSchema.safeParse(req.params);
+            const params = userIdParamSchema.safeParse(req.params);
             console.log(params, req.params)
             if (!params.success) {
                 throw new BadRequestError('Missing user ID');
             }
-            const { identifier } = params.data;
+            const { id } = params.data;
 
-            const user = await this.userService.deleteUser(identifier);
+            const user = await this.userService.deleteUser(id);
             return reply.code(200).send({ data: user, message: 'User deleted' });
         });
     }
