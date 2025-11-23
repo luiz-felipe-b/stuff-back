@@ -2,7 +2,6 @@ import { AIFunctionalitiesController } from "../controllers/ai-functionalities.c
 import { AIFunctionalitiesService } from "../services/ai-functionalities.service";
 import { FastifyTypedInstance } from "../../../../../types/fastify-typed-instance";
 import { aiFunctionalitiesRoutesDocs } from "../docs/ai-functionalities.docs";
-
 export async function aiFunctionalitiesRoutes(app: FastifyTypedInstance) {
     const service = new AIFunctionalitiesService();
     const controller = new AIFunctionalitiesController(service);
@@ -11,4 +10,9 @@ export async function aiFunctionalitiesRoutes(app: FastifyTypedInstance) {
         onRequest: [app.authenticate],
         schema: aiFunctionalitiesRoutesDocs.describeImage
     }, controller.describeImage.bind(controller));
+
+    app.post("/presigned-url", {
+        onRequest: [app.authenticate],
+        schema: aiFunctionalitiesRoutesDocs.generatePresignedUrl
+    }, controller.getPresignedImageUrl.bind(controller));
 }

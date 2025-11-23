@@ -12,6 +12,8 @@ const envSchema = z.object({
     SWAGGER_USERNAME: z.string(),
     SWAGGER_PASSWORD: z.string(),
     AWS_PROFILE: z.string().default('default'),
+    AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_REGION: z.string().default('us-east-1'),
     REQUIRE_AUTH: z.string().default('true'),
     SUPABASE_S3_ACCESS_KEY_ID: z.string().optional(),
@@ -19,6 +21,8 @@ const envSchema = z.object({
     SUPABASE_URL: z.string().optional(),
     SUPABASE_BUCKET: z.string().optional(),
     SUPABASE_BUCKET_REGION: z.string().optional(),
+    BEDROCK_ACCESS_KEY_ID: z.string().optional(),
+    BEDROCK_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

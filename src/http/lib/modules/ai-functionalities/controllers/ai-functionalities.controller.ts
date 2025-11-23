@@ -9,25 +9,28 @@ export class AIFunctionalitiesController {
 
     async describeImage(request: FastifyRequest, reply: FastifyReply): Promise<void> {
         try {
-            const { imageBase64, assetMetadata, prompt } = request.body as { imageBase64?: string, assetMetadata?: any, prompt?: string };
-            if (!imageBase64) throw new Error("imageBase64 is required");
-            // Get description from AI
-            const description = await this.service.describeImage(imageBase64, prompt);
-            // Stub: Register asset (replace with actual DB logic)
-            const asset = {
-                ...assetMetadata,
-                description,
-                registeredAt: new Date().toISOString()
-            };
-            reply.code(201).send({
-                data: asset,
-                message: "Asset registered from image description"
-            });
+            const { key, contextPrompt } = request.body as { key: string, contextPrompt?: string };
+            if (!key) throw new Error("key é obrigatório");
+            const result = await this.service.describeImage(key, contextPrompt);
+            // Return only the raw JSON (no formatting, no message wrapper)
+            reply.code(200).send(result);
         } catch (err: any) {
             reply.code(400).send({
-                message: err.message || "Error registering asset from image",
+                message: err.message || "Error describing image from bucket",
                 data: null
             });
+        }
+    }
+    /**
+     * Gera uma presigned URL para upload de imagem em images/ai no Supabase S3
+     * Body esperado: { filename: string }
+     */
+    async getPresignedImageUrl(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            const result = await this.service.generatePresignedImageUrl();
+            return reply.send(result);
+        } catch (err: any) {
+            return reply.code(400).send({ error: err.message || "Erro ao gerar presigned URL" });
         }
     }
 }
