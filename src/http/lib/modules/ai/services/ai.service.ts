@@ -28,18 +28,39 @@ export class AIService {
         });
     }
 
-    async invokeNovaWithImage(imageBase64: string, prompt: string): Promise<any> {
+    /**
+     * Envia uma imagem (base64) e um prompt para o Claude 3 Bedrock, sensível à extensão da imagem.
+     * @param imageBase64 Imagem codificada em base64
+     * @param prompt Prompt textual
+     * @param extension Extensão da imagem (ex: 'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'tiff'). Default: 'png'.
+     */
+    async invokeClaudeWithImage(imageBase64: string, prompt: string, extension: string = "png"): Promise<any> {
+        // Map extension to media type
+        const ext = extension.trim().toLowerCase();
+        const extToMediaType: Record<string, string> = {
+            png: "image/png",
+            jpg: "image/jpeg",
+            jpeg: "image/jpeg",
+            webp: "image/webp",
+            gif: "image/gif",
+            bmp: "image/bmp",
+            tiff: "image/tiff"
+        };
+        if (!extToMediaType[ext]) {
+            throw new Error(`Extensão de imagem não suportada: ${extension}`);
+        }
+        const mediaType = extToMediaType[ext];
         // Claude 3 Bedrock optimal multimodal payload: image block (with source) first, then text block, and anthropic_version
         const payload = {
             messages: [
-                {   
+                {
                     role: "user",
                     content: [
                         {
                             type: "image",
-                            source: {   
+                            source: {
                                 type: "base64",
-                                media_type: "image/png",
+                                media_type: mediaType,
                                 data: imageBase64
                             }
                         },

@@ -24,20 +24,27 @@ export class AIFunctionalitiesService {
         if (contextPrompt) prompt += "\n" + contextPrompt;
         // Send to Bedrock agent
         const aiService = new AIService();
-        const result = await aiService.invokeNovaWithImage(imageBase64, prompt);
+        const result = await aiService.invokeClaudeWithImage(imageBase64, prompt, key.split('.').pop() || "png");
         return result;
     }
 
         /**
-     * Gera uma presigned URL para upload de imagem em images/ai no Supabase S3
-     */
-    async generatePresignedImageUrl(): Promise<{ url: string; key: string }> {
-        // Generate a unique filename (timestamp + random string)
-        const random = Math.random().toString(36).substring(2, 10);
-        const filename = `${Date.now()}_${random}.png`;
-        const bucket = env.SUPABASE_BUCKET || "stuff-app";
-        const s3Key = `images/ai/${filename}`;
-        const url = await generatePresignedUploadUrl(bucket, s3Key);
-        return { url, key: s3Key };
-    }
+         * Gera uma presigned URL para upload de imagem em images/ai no Supabase S3
+         * @param extension Extensão do arquivo de imagem (ex: 'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'tiff'). Default: 'png'.
+         */
+        async generatePresignedImageUrl(extension: string = "png"): Promise<{ url: string; key: string; extension: string }> {
+            // Allow only safe image extensions
+            const allowedExtensions = ["png", "jpg", "jpeg"];
+            const ext = extension.trim().toLowerCase();
+            if (!allowedExtensions.includes(ext)) {
+                throw new Error(`Extensão de imagem não suportada: ${extension}`);
+            }
+            // Generate a unique filename (timestamp + random string)
+            const random = Math.random().toString(36).substring(2, 10);
+            const filename = `${Date.now()}_${random}.${ext}`;
+            const bucket = env.SUPABASE_BUCKET || "stuff-app";
+            const s3Key = `images/ai/${filename}`;
+            const url = await generatePresignedUploadUrl(bucket, s3Key);
+            return { url, key: s3Key, extension: ext };
+        }
 }
